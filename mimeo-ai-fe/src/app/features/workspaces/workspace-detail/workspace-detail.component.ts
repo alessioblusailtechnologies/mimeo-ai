@@ -19,6 +19,10 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   activeTab = signal<'agents' | 'contents'>('agents');
   activeFilter = signal<PostStatus | 'all'>('all');
   isChildRoute = signal(false);
+  agentView = signal<'card' | 'list'>('card');
+  contentView = signal<'card' | 'list'>('list');
+  triggerLoading = signal<string | null>(null);
+  triggerError = signal('');
   wsId = '';
 
   private routerSub!: Subscription;
@@ -98,8 +102,23 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   }
 
   triggerAgent(agent: Agent) {
-    this.router.navigate(['/workspaces', this.wsId, 'posts', 'generate'], {
-      queryParams: { agentId: agent.id }
+    if (!agent.schedule_brief) {
+      this.triggerError.set(`L'agente "${agent.name}" non ha un brief configurato. Modificalo per aggiungerne uno.`);
+      return;
+    }
+    this.triggerError.set('');
+    this.triggerLoading.set(agent.id);
+    this.postService.generate(this.wsId, agent.id, agent.schedule_brief).subscribe({
+      next: (result) => {
+        this.triggerLoading.set(null);
+        this.loadPosts();
+        this.activeTab.set('contents');
+        this.router.navigate(['/workspaces', this.wsId, 'posts', result.post.id]);
+      },
+      error: (err) => {
+        this.triggerLoading.set(null);
+        this.triggerError.set(err.error?.error || 'Errore durante la generazione del post.');
+      },
     });
   }
 }

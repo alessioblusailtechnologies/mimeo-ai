@@ -1,5 +1,8 @@
 <div class="page">
-  <h2>{{ isEdit ? 'Edit Agent' : 'New Agent' }}</h2>
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">&larr; Back to Agents</button>
+    <h2>{{ isEdit ? 'Edit Agent' : 'New Agent' }}</h2>
+  </div>
 
   @if (error()) {
     <div class="error-banner">{{ error() }}</div>
@@ -59,6 +62,13 @@
                 rows="4" placeholder="Additional instructions for the AI..."></textarea>
     </div>
 
+    <div class="field">
+      <label for="brief">Brief / Topic</label>
+      <textarea id="brief" [(ngModel)]="scheduleBrief" name="schedule_brief"
+                rows="3" placeholder="Describe what the agent should write about when triggered..." required></textarea>
+      <span class="field-hint">This is the topic/instructions the agent will use to generate content.</span>
+    </div>
+
     <!-- Schedule Section -->
     <div class="schedule-section">
       <div class="field-inline">
@@ -69,18 +79,11 @@
       </div>
 
       @if (scheduleEnabled) {
-        <div class="form-row">
-          <div class="field">
-            <label for="scheduleCron">Cron Expression</label>
-            <input id="scheduleCron" type="text" [(ngModel)]="scheduleCron" name="schedule_cron"
-                   placeholder="e.g. 0 9 * * 1 (every Monday at 9am)">
-            <span class="field-hint">Standard cron format: minute hour day month weekday</span>
-          </div>
-        </div>
         <div class="field">
-          <label for="scheduleBrief">Scheduled Brief</label>
-          <textarea id="scheduleBrief" [(ngModel)]="scheduleBrief" name="schedule_brief"
-                    rows="3" placeholder="The brief/topic to use when the schedule triggers..."></textarea>
+          <label for="scheduleCron">Cron Expression</label>
+          <input id="scheduleCron" type="text" [(ngModel)]="scheduleCron" name="schedule_cron"
+                 placeholder="e.g. 0 9 * * 1 (every Monday at 9am)">
+          <span class="field-hint">Standard cron format: minute hour day month weekday</span>
         </div>
       }
     </div>

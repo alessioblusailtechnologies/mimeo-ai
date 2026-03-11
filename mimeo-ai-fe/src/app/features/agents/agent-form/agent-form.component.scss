@@ -3,10 +3,13 @@
   animation: fadeIn .3s ease both;
 }
 
-h2 {
-  font-size: 17px;
-  font-weight: 700;
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   margin-bottom: 20px;
+
+  h2 { font-size: 17px; font-weight: 700; margin: 0; }
 }
 
 .error-banner {

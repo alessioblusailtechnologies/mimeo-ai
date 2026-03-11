@@ -24,57 +24,119 @@
     @if (isChildRoute()) {
       <router-outlet />
     } @else {
+
+      <!-- ===== AGENTS TAB ===== -->
       @if (activeTab() === 'agents') {
+        @if (triggerError()) {
+          <div class="trigger-error">{{ triggerError() }}</div>
+        }
+        <div class="toolbar">
+          <div class="toolbar-l">
+            <div class="view-toggle">
+              <button [class.active]="agentView() === 'card'" (click)="agentView.set('card')" title="Card view">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+              </button>
+              <button [class.active]="agentView() === 'list'" (click)="agentView.set('list')" title="List view">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="6.75" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="11.5" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+              </button>
+            </div>
+          </div>
+          <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary">+ Nuovo Agent</a>
+        </div>
+
         @if (agents().length === 0) {
           <div class="empty">
             <div class="empty-ico">&#9881;</div>
             <h3>Nessun Agent</h3>
             <p>Crea il tuo primo agente AI per generare contenuti LinkedIn.</p>
-            <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary" style="margin-top:14px">+ Nuovo Agent</a>
           </div>
         } @else {
-          <div class="agents-grid">
-            @for (agent of agents(); track agent.id) {
-              <div class="agent-card">
-                <div class="ac-head">
-                  <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
-                  <span class="ac-title">{{ agent.name }}</span>
-                  <div class="ac-actions">
-                    <button (click)="triggerAgent(agent)" title="Trigger">&#9654;</button>
+          <!-- Card View -->
+          @if (agentView() === 'card') {
+            <div class="agents-grid">
+              @for (agent of agents(); track agent.id) {
+                <div class="agent-card">
+                  <div class="ac-top">
+                    <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
+                    @if (agent.schedule_enabled) {
+                      <span class="ac-schedule">&#128340; Schedulato</span>
+                    }
+                  </div>
+                  <div class="ac-info">
+                    <span class="ac-title">{{ agent.name }}</span>
+                    <span class="ac-model">{{ agent.ai_model }}</span>
+                  </div>
+                  <div class="ac-tags">
+                    <span class="ac-tag">{{ agent.tone }}</span>
+                    @if (agent.target_audience) {
+                      <span class="ac-tag">{{ agent.target_audience }}</span>
+                    }
+                  </div>
+                  <div class="ac-footer">
+                    <div class="ac-actions">
+                      <button (click)="triggerAgent(agent)" [disabled]="triggerLoading() === agent.id" title="Trigger">
+                        @if (triggerLoading() === agent.id) {
+                          <span class="spinner"></span> Generando...
+                        } @else {
+                          &#9654; Genera
+                        }
+                      </button>
+                      <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Edit">&#9998; Modifica</a>
+                    </div>
+                    <button class="ac-del" (click)="deleteAgent(agent.id)" title="Elimina">&#128465;</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- List View -->
+          @if (agentView() === 'list') {
+            <div class="agents-list">
+              @for (agent of agents(); track agent.id) {
+                <div class="agent-row">
+                  <div class="agent-row-l">
+                    <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
+                    <span class="agent-row-name">{{ agent.name }}</span>
+                    <span class="agent-row-meta mono">{{ agent.ai_model }}</span>
+                    <span class="agent-row-meta">{{ agent.tone }}</span>
+                    @if (agent.schedule_enabled) {
+                      <span class="agent-row-sched">&#128340;</span>
+                    }
+                  </div>
+                  <div class="agent-row-actions">
+                    <button (click)="triggerAgent(agent)" [disabled]="triggerLoading() === agent.id" title="Trigger">
+                      @if (triggerLoading() === agent.id) { <span class="spinner-sm"></span> } @else { &#9654; }
+                    </button>
                     <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Edit">&#9998;</a>
                     <button class="del" (click)="deleteAgent(agent.id)" title="Elimina">&#128465;</button>
                   </div>
                 </div>
-                <div class="ac-body">
-                  <div class="ac-row"><span>Tone</span><span>{{ agent.tone }}</span></div>
-                  <div class="ac-row"><span>Model</span><span class="mono">{{ agent.ai_model }}</span></div>
-                  @if (agent.target_audience) {
-                    <div class="ac-row"><span>Audience</span><span>{{ agent.target_audience }}</span></div>
-                  }
-                </div>
-                @if (agent.schedule_enabled) {
-                  <div class="ac-meta">
-                    <span>&#128340; {{ agent.schedule_cron || 'Schedulato' }}</span>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-          <div style="padding:0 24px 20px">
-            <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary">+ Nuovo Agent</a>
-          </div>
+              }
+            </div>
+          }
         }
       }
 
+      <!-- ===== CONTENTS TAB ===== -->
       @if (activeTab() === 'contents') {
-        <div class="content-toolbar">
-          <div class="filter-group">
-            <button class="filter-btn" [class.active]="activeFilter() === 'all'" (click)="filterBy('all')">Tutti</button>
-            <button class="filter-btn" [class.active]="activeFilter() === 'draft'" (click)="filterBy('draft')">Bozze</button>
-            <button class="filter-btn" [class.active]="activeFilter() === 'approved'" (click)="filterBy('approved')">Approvati</button>
-            <button class="filter-btn" [class.active]="activeFilter() === 'published'" (click)="filterBy('published')">Pubblicati</button>
+        <div class="toolbar">
+          <div class="toolbar-l">
+            <div class="filter-group">
+              <button class="filter-btn" [class.active]="activeFilter() === 'all'" (click)="filterBy('all')">Tutti</button>
+              <button class="filter-btn" [class.active]="activeFilter() === 'draft'" (click)="filterBy('draft')">Bozze</button>
+              <button class="filter-btn" [class.active]="activeFilter() === 'approved'" (click)="filterBy('approved')">Approvati</button>
+              <button class="filter-btn" [class.active]="activeFilter() === 'published'" (click)="filterBy('published')">Pubblicati</button>
+            </div>
+            <div class="view-toggle">
+              <button [class.active]="contentView() === 'list'" (click)="contentView.set('list')" title="List view">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="6.75" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="11.5" width="14" height="2.5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+              </button>
+              <button [class.active]="contentView() === 'card'" (click)="contentView.set('card')" title="Card view">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+              </button>
+            </div>
           </div>
-          <a [routerLink]="['/workspaces', wsId, 'posts', 'generate']" class="btn btn-primary">+ Genera Post</a>
         </div>
 
         @if (posts().length === 0) {
@@ -84,20 +146,41 @@
             <p>Genera il tuo primo post LinkedIn con un agente AI.</p>
           </div>
         } @else {
-          <div class="posts-list">
-            @for (post of posts(); track post.id) {
-              <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="post-row">
-                <div class="post-row-l">
-                  <span class="status" [class]="'status-' + post.status">{{ post.status }}</span>
+          <!-- List View -->
+          @if (contentView() === 'list') {
+            <div class="posts-list">
+              @for (post of posts(); track post.id) {
+                <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="post-row">
+                  <div class="post-row-l">
+                    <span class="status" [class]="'status-' + post.status">{{ post.status }}</span>
+                    @if (post.title) {
+                      <span class="post-title">{{ post.title }}</span>
+                    }
+                    <span class="post-excerpt">{{ post.content | slice:0:120 }}{{ post.content.length > 120 ? '...' : '' }}</span>
+                  </div>
+                  <span class="post-date">{{ post.created_at | date:'short' }}</span>
+                </a>
+              }
+            </div>
+          }
+
+          <!-- Card View -->
+          @if (contentView() === 'card') {
+            <div class="posts-grid">
+              @for (post of posts(); track post.id) {
+                <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="post-card">
+                  <div class="pc-top">
+                    <span class="status" [class]="'status-' + post.status">{{ post.status }}</span>
+                    <span class="pc-date">{{ post.created_at | date:'short' }}</span>
+                  </div>
                   @if (post.title) {
-                    <span class="post-title">{{ post.title }}</span>
+                    <span class="pc-title">{{ post.title }}</span>
                   }
-                  <span class="post-excerpt">{{ post.content | slice:0:120 }}{{ post.content.length > 120 ? '...' : '' }}</span>
-                </div>
-                <span class="post-date">{{ post.created_at | date:'short' }}</span>
-              </a>
-            }
-          </div>
+                  <p class="pc-excerpt">{{ post.content | slice:0:180 }}{{ post.content.length > 180 ? '...' : '' }}</p>
+                </a>
+              }
+            </div>
+          }
         }
       }
     }

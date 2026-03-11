@@ -86,9 +86,9 @@ export class AgentFormComponent implements OnInit {
       target_audience: this.targetAudience || undefined,
       writing_style_guidelines: this.writingStyleGuidelines || undefined,
       custom_system_prompt: this.customSystemPrompt || undefined,
-      schedule_enabled: this.scheduleEnabled,
-      schedule_cron: this.scheduleCron || undefined,
       schedule_brief: this.scheduleBrief || undefined,
+      schedule_enabled: this.scheduleEnabled,
+      schedule_cron: this.scheduleEnabled ? (this.scheduleCron || undefined) : undefined,
     };
 
     const req = this.isEdit && this.agentId

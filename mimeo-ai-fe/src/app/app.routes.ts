@@ -29,10 +29,6 @@ export const routes: Routes = [
             loadComponent: () => import('./features/agents/agent-form/agent-form.component').then(m => m.AgentFormComponent),
           },
           {
-            path: 'posts/generate',
-            loadComponent: () => import('./features/posts/post-generate/post-generate.component').then(m => m.PostGenerateComponent),
-          },
-          {
             path: 'posts/:id',
             loadComponent: () => import('./features/posts/post-detail/post-detail.component').then(m => m.PostDetailComponent),
           },

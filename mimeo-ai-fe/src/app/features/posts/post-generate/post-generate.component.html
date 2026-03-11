@@ -1,5 +1,8 @@
 <div class="page">
-  <h2>Generate LinkedIn Post</h2>
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">&larr; Back to Contents</button>
+    <h2>Generate LinkedIn Post</h2>
+  </div>
 
   @if (agents().length === 0) {
     <div class="empty-state">

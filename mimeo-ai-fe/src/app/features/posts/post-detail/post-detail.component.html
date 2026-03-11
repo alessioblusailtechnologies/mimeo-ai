@@ -1,7 +1,10 @@
 @if (post(); as post) {
   <div class="page">
     <div class="page-header">
-      <h2>{{ post.title || 'Post' }}</h2>
+      <div class="page-header-l">
+        <button class="btn-back" (click)="goBack()">&larr; Back to Contents</button>
+        <h2>{{ post.title || 'Post' }}</h2>
+      </div>
       <div class="header-actions">
         @if (post.status === 'draft') {
           <button class="btn-secondary" (click)="regenerate()" [disabled]="actionLoading() === 'regenerate'">

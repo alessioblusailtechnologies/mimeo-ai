@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Subscription, filter } from 'rxjs';

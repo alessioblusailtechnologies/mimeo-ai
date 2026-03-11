@@ -1,7 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { SlicePipe } from '@angular/common';
 import { AgentService, CreateAgentDto } from '../../../core/services/agent.service';
+import { ChatService, ChatMessage, ChatResponse } from '../../../core/services/chat.service';
 
 const MODEL_OPTIONS: Record<string, string[]> = {
   claude: ['claude-sonnet-4-20250514', 'claude-haiku-4-20250414'],
@@ -10,7 +12,7 @@ const MODEL_OPTIONS: Record<string, string[]> = {
 
 @Component({
   selector: 'app-agent-form',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink, SlicePipe],
   templateUrl: './agent-form.component.html',
   styleUrl: './agent-form.component.scss'
 })
@@ -21,6 +23,10 @@ export class AgentFormComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
+  // Mode: 'chat' or 'manual'
+  mode = signal<'chat' | 'manual'>('chat');
+
+  // Manual form
   form: CreateAgentDto = {
     name: '',
     tone: 'professional',
@@ -31,13 +37,18 @@ export class AgentFormComponent implements OnInit {
   targetAudience = '';
   writingStyleGuidelines = '';
   customSystemPrompt = '';
-
-  // Schedule
   scheduleEnabled = false;
   scheduleCron = '';
   scheduleBrief = '';
 
   tones = ['professional', 'creative', 'technical', 'casual', 'inspirational', 'educational'];
+
+  // Chat
+  chatMessages = signal<ChatMessage[]>([]);
+  chatLoading = signal(false);
+  chatResults = signal<ChatResponse['results'] | null>(null);
+  chatInput = '';
+  showChat = computed(() => this.chatMessages().length > 0);
 
   get modelOptions(): string[] {
     return MODEL_OPTIONS[this.form.ai_provider] || [];
@@ -45,6 +56,7 @@ export class AgentFormComponent implements OnInit {
 
   constructor(
     private agentService: AgentService,
+    private chatService: ChatService,
     protected router: Router,
     private route: ActivatedRoute
   ) {}
@@ -55,6 +67,7 @@ export class AgentFormComponent implements OnInit {
     if (id) {
       this.isEdit = true;
       this.agentId = id;
+      this.mode.set('manual');
       this.agentService.getById(this.wsId, id).subscribe(agent => {
         this.form = {
           name: agent.name,
@@ -102,6 +115,32 @@ export class AgentFormComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  sendChat() {
+    if (!this.chatInput.trim()) return;
+    const message = this.chatInput.trim();
+    const history = this.chatMessages();
+    this.chatMessages.set([...history, { role: 'user', content: message }]);
+    this.chatLoading.set(true);
+    this.chatInput = '';
+    this.chatService.send(this.wsId, message, history).subscribe({
+      next: (response) => {
+        this.chatMessages.set([...this.chatMessages(), { role: 'assistant', content: response.message }]);
+        if (response.done && response.results) {
+          this.chatResults.set(response.results);
+        }
+        this.chatLoading.set(false);
+      },
+      error: () => {
+        this.chatMessages.set([...this.chatMessages(), { role: 'assistant', content: 'Si è verificato un errore. Riprova.' }]);
+        this.chatLoading.set(false);
+      },
+    });
+  }
+
+  goToWorkspace() {
+    this.router.navigate(['/workspaces', this.wsId]);
   }
 
   goBack() {

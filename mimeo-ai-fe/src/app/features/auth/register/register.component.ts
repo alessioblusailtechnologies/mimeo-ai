@@ -24,7 +24,7 @@ export class RegisterComponent {
 
     this.authService.register(this.email, this.password, this.fullName || undefined).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/']);
       },
       error: (err) => {
         this.error.set(err.error?.error || 'Registration failed');

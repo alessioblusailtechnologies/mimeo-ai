@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Subscription, filter } from 'rxjs';
@@ -23,9 +23,11 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   contentView = signal<'card' | 'list'>('list');
   triggerLoading = signal<string | null>(null);
   triggerError = signal('');
+  currentTime = signal(new Date());
   wsId = '';
 
   private routerSub!: Subscription;
+  private timerInterval!: ReturnType<typeof setInterval>;
 
   constructor(
     private workspaceService: WorkspaceService,
@@ -46,10 +48,13 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
       filter(e => e instanceof NavigationEnd)
     ).subscribe(() => this.updateRouteState());
     this.updateRouteState();
+
+    this.timerInterval = setInterval(() => this.currentTime.set(new Date()), 30_000);
   }
 
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
+    clearInterval(this.timerInterval);
   }
 
   private updateRouteState() {

@@ -20,7 +20,7 @@ interface AuthResponse {
 interface MeResponse {
   success: boolean;
   data: {
-    user: unknown;
+    user: { email?: string; [key: string]: unknown };
     profile: {
       id: string;
       full_name: string | null;

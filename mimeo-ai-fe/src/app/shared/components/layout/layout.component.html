@@ -38,9 +38,14 @@
 
     <div class="sb-foot">
       @if (authService.user(); as userData) {
-        <span class="sb-user">{{ userData.profile.full_name || 'User' }}</span>
+        <div class="sb-user-info">
+          <span class="sb-avatar">{{ (userData.user.email || 'U')[0] | uppercase }}</span>
+          <span class="sb-email">{{ userData.user.email || 'User' }}</span>
+        </div>
       }
-      <button class="btn btn-sm" (click)="logout()">Logout</button>
+      <button class="sb-logout" (click)="logout()" title="Logout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
   </aside>
 

@@ -1,12 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { UpperCasePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { WorkspaceService, Workspace } from '../../../core/services/workspace.service';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, UpperCasePipe],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss'
 })

@@ -1,0 +1,95 @@
+<div class="page">
+  <h2>{{ isEdit ? 'Edit Agent' : 'New Agent' }}</h2>
+
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  <form class="form-card" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="field">
+        <label for="name">Agent Name</label>
+        <input id="name" type="text" [(ngModel)]="form.name" name="name"
+               placeholder="e.g. LinkedIn Pro Writer" required>
+      </div>
+      <div class="field">
+        <label for="tone">Tone</label>
+        <select id="tone" [(ngModel)]="form.tone" name="tone">
+          @for (tone of tones; track tone) {
+            <option [value]="tone">{{ tone }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label for="provider">AI Provider</label>
+        <select id="provider" [(ngModel)]="form.ai_provider" name="ai_provider"
+                (ngModelChange)="onProviderChange()">
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="model">AI Model</label>
+        <select id="model" [(ngModel)]="form.ai_model" name="ai_model">
+          @for (model of modelOptions; track model) {
+            <option [value]="model">{{ model }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="audience">Target Audience</label>
+      <input id="audience" type="text" [(ngModel)]="targetAudience" name="target_audience"
+             placeholder="e.g. Tech professionals and startup founders">
+    </div>
+
+    <div class="field">
+      <label for="style">Writing Style Guidelines</label>
+      <textarea id="style" [(ngModel)]="writingStyleGuidelines" name="writing_style_guidelines"
+                rows="3" placeholder="e.g. Use short paragraphs, include actionable insights..."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="prompt">Custom System Prompt</label>
+      <textarea id="prompt" [(ngModel)]="customSystemPrompt" name="custom_system_prompt"
+                rows="4" placeholder="Additional instructions for the AI..."></textarea>
+    </div>
+
+    <!-- Schedule Section -->
+    <div class="schedule-section">
+      <div class="field-inline">
+        <label for="scheduleEnabled">
+          <input id="scheduleEnabled" type="checkbox" [(ngModel)]="scheduleEnabled" name="schedule_enabled">
+          Enable Scheduling
+        </label>
+      </div>
+
+      @if (scheduleEnabled) {
+        <div class="form-row">
+          <div class="field">
+            <label for="scheduleCron">Cron Expression</label>
+            <input id="scheduleCron" type="text" [(ngModel)]="scheduleCron" name="schedule_cron"
+                   placeholder="e.g. 0 9 * * 1 (every Monday at 9am)">
+            <span class="field-hint">Standard cron format: minute hour day month weekday</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="scheduleBrief">Scheduled Brief</label>
+          <textarea id="scheduleBrief" [(ngModel)]="scheduleBrief" name="schedule_brief"
+                    rows="3" placeholder="The brief/topic to use when the schedule triggers..."></textarea>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="goBack()">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="loading()">
+        {{ loading() ? 'Saving...' : (isEdit ? 'Update Agent' : 'Create Agent') }}
+      </button>
+    </div>
+  </form>
+</div>

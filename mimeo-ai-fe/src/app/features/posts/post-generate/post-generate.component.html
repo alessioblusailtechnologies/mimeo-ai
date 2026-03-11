@@ -1,0 +1,57 @@
+<div class="page">
+  <h2>Generate LinkedIn Post</h2>
+
+  @if (agents().length === 0) {
+    <div class="empty-state">
+      <p>You need at least one agent to generate posts.</p>
+      <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn-primary">Create Agent</a>
+    </div>
+  } @else {
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <form class="form-card" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="agent">Select Agent</label>
+        <select id="agent" [(ngModel)]="selectedAgentId" name="agent">
+          @for (agent of agents(); track agent.id) {
+            <option [value]="agent.id">{{ agent.name }} ({{ agent.ai_provider }} / {{ agent.tone }})</option>
+          }
+        </select>
+      </div>
+
+      @if (selectedAgent; as agent) {
+        <div class="agent-preview">
+          <span class="preview-label">Agent config:</span>
+          <span>{{ agent.tone }} tone</span>
+          <span>{{ agent.ai_provider }} / {{ agent.ai_model }}</span>
+          @if (agent.target_audience) {
+            <span>Audience: {{ agent.target_audience }}</span>
+          }
+        </div>
+      }
+
+      <div class="field">
+        <label for="title">Title (optional)</label>
+        <input id="title" type="text" [(ngModel)]="title" name="title"
+               placeholder="e.g. My take on AI in 2025">
+      </div>
+
+      <div class="field">
+        <label for="brief">Brief / Topic</label>
+        <textarea id="brief" [(ngModel)]="brief" name="brief" rows="5" required
+                  placeholder="Describe what you want to write about. Be specific about the key points, angle, or message you want to convey..."></textarea>
+        <span class="char-count">{{ brief.length }} / 5000</span>
+      </div>
+
+      <button type="submit" class="btn-generate" [disabled]="loading() || !brief.trim() || !selectedAgentId">
+        @if (loading()) {
+          <span class="spinner"></span> Generating...
+        } @else {
+          Generate Post
+        }
+      </button>
+    </form>
+  }
+</div>

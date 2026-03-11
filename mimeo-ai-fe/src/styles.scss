@@ -1,1 +1,76 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-0: #0d1b2a;
+  --bg-1: #131f30;
+  --bg-2: #1b263b;
+  --bg-3: #243044;
+  --bg-4: #2d3a4e;
+  --border: #334155;
+  --border-h: #415a77;
+  --text-1: #e0e1dd;
+  --text-2: #a8b2c1;
+  --text-3: #6b7a8d;
+  --accent: #778da9;
+  --accent-l: #a3b5cc;
+  --accent-bg: rgba(119, 141, 169, .12);
+  --green: #5eead4;
+  --green-bg: rgba(94, 234, 212, .1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251, 191, 36, .1);
+  --red: #fca5a5;
+  --red-bg: rgba(252, 165, 165, .1);
+  --cyan: #67e8f9;
+  --cyan-bg: rgba(103, 232, 249, .08);
+  --pink: #f9a8d4;
+  --pink-bg: rgba(249, 168, 212, .08);
+  --blue: #93c5fd;
+  --blue-bg: rgba(147, 197, 253, .08);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --topbar-h: 56px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-0);
+  color: var(--text-1);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+app-root { display: block; width: 100%; height: 100vh; }
+router-outlet + * { display: block; flex: 1; overflow-y: auto; width: 100%; }
+
+a { color: var(--accent-l); text-decoration: none; }
+input, textarea, select, button { font-family: inherit; }
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:20px}
+.breadcrumb a{color:var(--text-3);text-decoration:none;font-weight:500;transition:.15s}
+.breadcrumb a:hover{color:var(--accent-l)}
+.breadcrumb .sep{color:var(--text-3);font-size:10px;opacity:.6}
+.breadcrumb .current{color:var(--text-1);font-weight:600}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dp {
+  0%, 80%, 100% { opacity: .3; transform: scale(.8); }
+  40% { opacity: 1; transform: scale(1); }
+}

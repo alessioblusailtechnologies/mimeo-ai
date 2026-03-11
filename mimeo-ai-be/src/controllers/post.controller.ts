@@ -1,0 +1,68 @@
+import { Request, Response, NextFunction } from 'express';
+import * as postService from '../services/post.service.js';
+import { sendSuccess, sendCreated } from '../utils/api-response.js';
+import type { PostStatus } from '../types/post.types.js';
+
+export async function generate(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const result = await postService.generateDraft(req.params.wsId, req.body, req.user!.id);
+    sendCreated(res, result);
+  } catch (err) { next(err); }
+}
+
+export async function regenerate(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const result = await postService.regenerate(req.params.id, req.user!.id);
+    sendSuccess(res, result);
+  } catch (err) { next(err); }
+}
+
+export async function selectGeneration(req: Request<{ wsId: string; id: string; genId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.selectGeneration(req.params.id, req.params.genId, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function list(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const status = req.query.status as PostStatus | undefined;
+    const posts = await postService.listDrafts(req.params.wsId, req.user!.id, status ? { status } : undefined);
+    sendSuccess(res, posts);
+  } catch (err) { next(err); }
+}
+
+export async function getById(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.getDraft(req.params.id, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function update(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.updateDraft(req.params.id, req.body, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function approve(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.approveDraft(req.params.id, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function publish(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.publishPost(req.params.id, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function getGenerations(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const generations = await postService.getGenerations(req.params.id, req.user!.id);
+    sendSuccess(res, generations);
+  } catch (err) { next(err); }
+}

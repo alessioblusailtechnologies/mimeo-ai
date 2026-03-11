@@ -1,0 +1,103 @@
+.auth-page {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--bg-0);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+  animation: fadeIn .3s ease both;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+
+  .subtitle {
+    margin: 0 0 24px;
+    color: var(--text-3);
+    font-size: 13px;
+  }
+}
+
+.error-banner {
+  padding: 10px 14px;
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(252, 165, 165, .2);
+}
+
+.field {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  input {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-1);
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+    outline: none;
+    transition: all .15s;
+
+    &:focus { border-color: var(--accent); }
+    &::placeholder { color: var(--text-3); }
+  }
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: #e0e1dd;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+
+  &:hover:not(:disabled) { background: var(--accent-l); border-color: var(--accent-l); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.footer-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12.5px;
+  color: var(--text-3);
+
+  a {
+    color: var(--accent-l);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover { color: var(--text-1); }
+  }
+}

@@ -1,0 +1,85 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-head">
+      <a class="logo" (click)="workspaces().length ? null : null">
+        <span class="logo-mark">M</span>
+        <span class="logo-text">Mimeo AI</span>
+      </a>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-t">
+        <span>Workspace</span>
+        <button (click)="openWsModal()" title="Nuovo Workspace">+</button>
+      </div>
+    </div>
+
+    <nav class="ws-list">
+      @for (ws of workspaces(); track ws.id) {
+        @if (editingWsId() === ws.id) {
+          <div class="ws-edit-row">
+            <input type="text" [(ngModel)]="editWsName" class="ws-edit-input"
+                   (keyup.enter)="saveWsEdit(ws, $event)" (keyup.escape)="cancelWsEdit($event)">
+            <button class="ws-edit-ok" (click)="saveWsEdit(ws, $event)" title="Salva">&#10003;</button>
+            <button class="ws-edit-no" (click)="cancelWsEdit($event)" title="Annulla">&#10005;</button>
+          </div>
+        } @else {
+          <a [routerLink]="['/workspaces', ws.id]" routerLinkActive="active" class="ws-item">
+            <span class="ws-dot"></span>
+            <span class="name">{{ ws.name }}</span>
+            <span class="ws-actions">
+              <button (click)="startWsEdit(ws, $event)" title="Rinomina">&#9998;</button>
+              <button class="del" (click)="deleteWorkspace(ws, $event)" title="Elimina">&#128465;</button>
+            </span>
+          </a>
+        }
+      }
+    </nav>
+
+    <div class="sb-foot">
+      @if (authService.user(); as userData) {
+        <span class="sb-user">{{ userData.profile.full_name || 'User' }}</span>
+      }
+      <button class="btn btn-sm" (click)="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    @if (noWorkspaces()) {
+      <div class="no-ws">
+        <div class="no-ws-ico">&#128640;</div>
+        <h2>Benvenuto in Mimeo AI</h2>
+        <p>Crea il tuo primo workspace per iniziare a generare contenuti LinkedIn con l'intelligenza artificiale.</p>
+        <button class="btn btn-primary" (click)="openWsModal()">+ Crea Workspace</button>
+      </div>
+    } @else {
+      <router-outlet />
+    }
+  </main>
+</div>
+
+<!-- Modal: Nuovo Workspace -->
+@if (showWsModal()) {
+  <div class="overlay" (click)="closeWsModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-h">
+        <h3>Nuovo Workspace</h3>
+        <button class="mx" (click)="closeWsModal()">&#x2715;</button>
+      </div>
+      <div class="modal-b">
+        <div class="fg">
+          <label>Nome</label>
+          <input [(ngModel)]="newWsName" placeholder="es. LinkedIn Marketing Q1" (keyup.enter)="createWorkspace()">
+        </div>
+        <div class="fg">
+          <label>Descrizione</label>
+          <textarea [(ngModel)]="newWsDesc" placeholder="Descrizione del workspace..." rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" (click)="closeWsModal()">Annulla</button>
+        <button class="btn btn-primary" (click)="createWorkspace()">Crea Workspace</button>
+      </div>
+    </div>
+  </div>
+}

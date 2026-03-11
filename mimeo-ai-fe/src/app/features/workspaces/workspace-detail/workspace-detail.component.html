@@ -1,0 +1,105 @@
+@if (workspace(); as ws) {
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-l">
+      <h2>{{ ws.name }}</h2>
+      @if (ws.description) {
+        <span class="info">{{ ws.description }}</span>
+      }
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'agents'" (click)="switchTab('agents')">
+      <span class="tab-ico">&#129302;</span> Agents
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'contents'" (click)="switchTab('contents')">
+      <span class="tab-ico">&#128196;</span> Contents
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    @if (isChildRoute()) {
+      <router-outlet />
+    } @else {
+      @if (activeTab() === 'agents') {
+        @if (agents().length === 0) {
+          <div class="empty">
+            <div class="empty-ico">&#9881;</div>
+            <h3>Nessun Agent</h3>
+            <p>Crea il tuo primo agente AI per generare contenuti LinkedIn.</p>
+            <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary" style="margin-top:14px">+ Nuovo Agent</a>
+          </div>
+        } @else {
+          <div class="agents-grid">
+            @for (agent of agents(); track agent.id) {
+              <div class="agent-card">
+                <div class="ac-head">
+                  <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
+                  <span class="ac-title">{{ agent.name }}</span>
+                  <div class="ac-actions">
+                    <button (click)="triggerAgent(agent)" title="Trigger">&#9654;</button>
+                    <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Edit">&#9998;</a>
+                    <button class="del" (click)="deleteAgent(agent.id)" title="Elimina">&#128465;</button>
+                  </div>
+                </div>
+                <div class="ac-body">
+                  <div class="ac-row"><span>Tone</span><span>{{ agent.tone }}</span></div>
+                  <div class="ac-row"><span>Model</span><span class="mono">{{ agent.ai_model }}</span></div>
+                  @if (agent.target_audience) {
+                    <div class="ac-row"><span>Audience</span><span>{{ agent.target_audience }}</span></div>
+                  }
+                </div>
+                @if (agent.schedule_enabled) {
+                  <div class="ac-meta">
+                    <span>&#128340; {{ agent.schedule_cron || 'Schedulato' }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div style="padding:0 24px 20px">
+            <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary">+ Nuovo Agent</a>
+          </div>
+        }
+      }
+
+      @if (activeTab() === 'contents') {
+        <div class="content-toolbar">
+          <div class="filter-group">
+            <button class="filter-btn" [class.active]="activeFilter() === 'all'" (click)="filterBy('all')">Tutti</button>
+            <button class="filter-btn" [class.active]="activeFilter() === 'draft'" (click)="filterBy('draft')">Bozze</button>
+            <button class="filter-btn" [class.active]="activeFilter() === 'approved'" (click)="filterBy('approved')">Approvati</button>
+            <button class="filter-btn" [class.active]="activeFilter() === 'published'" (click)="filterBy('published')">Pubblicati</button>
+          </div>
+          <a [routerLink]="['/workspaces', wsId, 'posts', 'generate']" class="btn btn-primary">+ Genera Post</a>
+        </div>
+
+        @if (posts().length === 0) {
+          <div class="empty">
+            <div class="empty-ico">&#9998;</div>
+            <h3>Nessun Contenuto</h3>
+            <p>Genera il tuo primo post LinkedIn con un agente AI.</p>
+          </div>
+        } @else {
+          <div class="posts-list">
+            @for (post of posts(); track post.id) {
+              <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="post-row">
+                <div class="post-row-l">
+                  <span class="status" [class]="'status-' + post.status">{{ post.status }}</span>
+                  @if (post.title) {
+                    <span class="post-title">{{ post.title }}</span>
+                  }
+                  <span class="post-excerpt">{{ post.content | slice:0:120 }}{{ post.content.length > 120 ? '...' : '' }}</span>
+                </div>
+                <span class="post-date">{{ post.created_at | date:'short' }}</span>
+              </a>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+}

@@ -1,0 +1,104 @@
+@if (post(); as post) {
+  <div class="page">
+    <div class="page-header">
+      <h2>{{ post.title || 'Post' }}</h2>
+      <div class="header-actions">
+        @if (post.status === 'draft') {
+          <button class="btn-secondary" (click)="regenerate()" [disabled]="actionLoading() === 'regenerate'">
+            {{ actionLoading() === 'regenerate' ? 'Regenerating...' : 'Regenerate' }}
+          </button>
+          <button class="btn-primary" (click)="approve()" [disabled]="actionLoading() === 'approve'">
+            {{ actionLoading() === 'approve' ? 'Approving...' : 'Approve' }}
+          </button>
+        }
+        @if (post.status === 'approved') {
+          <button class="btn-publish" (click)="publish()" [disabled]="actionLoading() === 'publish'">
+            {{ actionLoading() === 'publish' ? 'Publishing...' : 'Publish' }}
+          </button>
+        }
+        <button class="btn-copy" (click)="copyToClipboard()">
+          {{ copied() ? 'Copied!' : 'Copy Text' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="post-info">
+      <span class="status-badge" [class]="'status-' + post.status">{{ post.status }}</span>
+      <span class="date">Created {{ post.created_at | date:'medium' }}</span>
+      @if (post.published_at) {
+        <span class="date">Published {{ post.published_at | date:'medium' }}</span>
+      }
+    </div>
+
+    <div class="brief-section">
+      <span class="section-label">Original Brief</span>
+      <p>{{ post.original_brief }}</p>
+    </div>
+
+    <div class="content-section">
+      <div class="content-header">
+        <span class="section-label">Post Content</span>
+        @if (post.status === 'draft' && !editing()) {
+          <button class="btn-edit" (click)="startEdit()">Edit</button>
+        }
+      </div>
+
+      @if (editing()) {
+        <div class="edit-area">
+          <div class="field">
+            <label>Title (optional)</label>
+            <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
+          </div>
+          <div class="field">
+            <label>Content</label>
+            <textarea [(ngModel)]="editContent" rows="12"></textarea>
+          </div>
+          <div class="edit-actions">
+            <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+            <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
+              {{ loading() ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="post-content">{{ post.content }}</div>
+      }
+    </div>
+
+    @if (generations().length > 1) {
+      <div class="generations-section">
+        <span class="section-label">Generation History ({{ generations().length }})</span>
+        <div class="generations-list">
+          @for (gen of generations(); track gen.id) {
+            <div class="generation-card" [class.selected]="gen.is_selected">
+              <div class="gen-header">
+                <div class="gen-meta">
+                  <span class="gen-provider">{{ gen.ai_provider }} / {{ gen.ai_model }}</span>
+                  <span class="gen-date">{{ gen.created_at | date:'short' }}</span>
+                  @if (gen.is_selected) {
+                    <span class="gen-active">Active</span>
+                  }
+                </div>
+                @if (!gen.is_selected && post.status === 'draft') {
+                  <button class="btn-select" (click)="selectGeneration(gen)"
+                          [disabled]="actionLoading() === 'select-' + gen.id">
+                    Use this
+                  </button>
+                }
+              </div>
+              <p class="gen-content">{{ gen.content }}</p>
+              @if (gen.prompt_tokens || gen.completion_tokens) {
+                <div class="gen-stats">
+                  <span>Tokens: {{ gen.prompt_tokens }} in / {{ gen.completion_tokens }} out</span>
+                  @if (gen.generation_time_ms) {
+                    <span>{{ gen.generation_time_ms }}ms</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

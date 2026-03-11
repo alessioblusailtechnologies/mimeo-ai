@@ -3,30 +3,152 @@
   display: grid;
   place-items: center;
   background: var(--bg-0);
+  position: relative;
+  overflow: hidden;
 }
 
-.auth-card {
-  width: 100%;
-  max-width: 420px;
+/* ===== ANIMATED BACKGROUND ===== */
+.bg-stream {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 16px;
+  padding: 0 5%;
+  pointer-events: none;
+}
+
+.bg-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: scrollUp 40s linear infinite;
+}
+
+.bg-col-1 { animation-duration: 38s; }
+.bg-col-2 { animation-duration: 44s; animation-delay: -8s; }
+.bg-col-3 { animation-duration: 42s; animation-delay: -16s; }
+
+@keyframes scrollUp {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.bg-card {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  padding: 16px;
+  opacity: .35;
+  flex-shrink: 0;
+}
+
+.bg-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  color: var(--accent-l);
+  background: var(--accent-bg);
+
+  &.green { color: var(--green); background: var(--green-bg); }
+  &.cyan { color: var(--cyan); background: var(--cyan-bg); }
+}
+
+.bg-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.bg-text {
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+.typing {
+  display: inline;
+  border-right: 2px solid var(--accent);
+  animation: blink .8s step-end infinite;
+}
+
+.t1 { animation: typeReveal 6s steps(40) 0s both, blink .8s step-end infinite; }
+.t2 { animation: typeReveal 7s steps(40) 2s both, blink .8s step-end infinite; }
+.t3 { animation: typeReveal 5s steps(40) 4s both, blink .8s step-end infinite; }
+.t4 { animation: typeReveal 8s steps(40) 1s both, blink .8s step-end infinite; }
+.t5 { animation: typeReveal 6s steps(40) 3s both, blink .8s step-end infinite; }
+
+@keyframes typeReveal {
+  from { max-width: 0; }
+  to   { max-width: 600px; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, rgba(13,27,42,.85) 0%, rgba(13,27,42,.5) 60%, rgba(13,27,42,.75) 100%);
+  pointer-events: none;
+}
+
+/* ===== AUTH CARD ===== */
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(19, 31, 48, .92);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   padding: 36px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
-  animation: fadeIn .3s ease both;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .5), 0 0 0 1px rgba(119, 141, 169, .08);
+  animation: fadeIn .4s ease both;
+}
 
-  h1 {
-    margin: 0 0 4px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-1);
-  }
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
 
-  .subtitle {
-    margin: 0 0 24px;
-    color: var(--text-3);
-    font-size: 13px;
-  }
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #415a77, #778da9);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #e0e1dd;
+  flex-shrink: 0;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: var(--text-3);
+  font-size: 13px;
 }
 
 .error-banner {
@@ -54,7 +176,7 @@
 
   input {
     width: 100%;
-    padding: 9px 12px;
+    padding: 10px 12px;
     background: var(--bg-3);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -65,7 +187,7 @@
     outline: none;
     transition: all .15s;
 
-    &:focus { border-color: var(--accent); }
+    &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
     &::placeholder { color: var(--text-3); }
   }
 }
@@ -97,7 +219,6 @@
     color: var(--accent-l);
     text-decoration: none;
     font-weight: 500;
-
     &:hover { color: var(--text-1); }
   }
 }

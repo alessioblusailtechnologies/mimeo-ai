@@ -1,14 +1,25 @@
 import * as agentRepo from '../repositories/agent.repository.js';
 import * as postRepo from '../repositories/post.repository.js';
 import * as generationRepo from '../repositories/generation.repository.js';
+import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
 import { ManualCopyPublisher } from './publishing/manual-copy.publisher.js';
 import { buildSystemPrompt, buildUserPrompt } from '../utils/prompt-builder.js';
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 import type { Post, PostStatus, GenerateDraftDto, UpdatePostDto } from '../types/post.types.js';
 import type { Generation } from '../types/generation.types.js';
+import type { Agent } from '../types/agent.types.js';
 
 const publisher = new ManualCopyPublisher();
+
+async function fetchToneOfVoice(agent: Agent, userId: string) {
+  if (!agent.tone_of_voice_id) return null;
+  try {
+    return await tovRepo.findById(agent.tone_of_voice_id, userId);
+  } catch {
+    return null;
+  }
+}
 
 export async function generateDraft(
   workspaceId: string,
@@ -16,8 +27,9 @@ export async function generateDraft(
   userId: string
 ): Promise<{ post: Post; generation: Generation }> {
   const agent = await agentRepo.findById(dto.agent_id, userId);
+  const tov = await fetchToneOfVoice(agent, userId);
 
-  const systemPrompt = buildSystemPrompt(agent);
+  const systemPrompt = buildSystemPrompt(agent, tov);
   const userPrompt = buildUserPrompt(dto.brief);
 
   const aiProvider = getAiProvider(agent.ai_provider);
@@ -58,8 +70,9 @@ export async function regenerate(
 ): Promise<{ post: Post; generation: Generation }> {
   const post = await postRepo.findById(postId, userId);
   const agent = await agentRepo.findById(post.agent_id, userId);
+  const tov = await fetchToneOfVoice(agent, userId);
 
-  const systemPrompt = buildSystemPrompt(agent);
+  const systemPrompt = buildSystemPrompt(agent, tov);
   const userPrompt = buildUserPrompt(post.original_brief);
 
   const aiProvider = getAiProvider(agent.ai_provider);

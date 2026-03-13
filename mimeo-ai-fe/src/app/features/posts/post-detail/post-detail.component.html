@@ -2,7 +2,7 @@
   <div class="page">
     <div class="page-header">
       <div class="page-header-l">
-        <button class="btn-back" (click)="goBack()">&larr; Back to Contents</button>
+        <button class="btn-back" (click)="goBack()"><app-icon [icon]="icons.arrowLeft" [size]="16" /> Back to Contents</button>
         <h2>{{ post.title || 'Post' }}</h2>
       </div>
       <div class="header-actions">
@@ -64,7 +64,7 @@
           </div>
         </div>
       } @else {
-        <div class="post-content">{{ post.content }}</div>
+        <div class="post-content" [innerHTML]="post.content | markdown"></div>
       }
     </div>
 
@@ -89,7 +89,7 @@
                   </button>
                 }
               </div>
-              <p class="gen-content">{{ gen.content }}</p>
+              <div class="gen-content" [innerHTML]="gen.content | markdown"></div>
               @if (gen.prompt_tokens || gen.completion_tokens) {
                 <div class="gen-stats">
                   <span>Tokens: {{ gen.prompt_tokens }} in / {{ gen.completion_tokens }} out</span>

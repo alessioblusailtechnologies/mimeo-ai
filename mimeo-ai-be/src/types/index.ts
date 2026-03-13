@@ -5,3 +5,4 @@ export * from './agent.types.js';
 export * from './post.types.js';
 export * from './generation.types.js';
 export * from './chat.types.js';
+export * from './tone-of-voice.types.js';

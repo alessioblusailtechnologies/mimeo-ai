@@ -2,15 +2,14 @@
   <aside class="sidebar">
     <div class="sb-head">
       <a class="logo" (click)="workspaces().length ? null : null">
-        <span class="logo-mark">M</span>
-        <span class="logo-text">Mimeo AI</span>
+        <app-logo size="sm" />
       </a>
     </div>
 
     <div class="sb-sec">
       <div class="sb-t">
         <span>Workspace</span>
-        <button (click)="openWsModal()" title="Nuovo Workspace">+</button>
+        <button (click)="openWsModal()" title="Nuovo Workspace"><app-icon [icon]="icons.plus" [size]="14" /></button>
       </div>
     </div>
 
@@ -20,16 +19,16 @@
           <div class="ws-edit-row">
             <input type="text" [(ngModel)]="editWsName" class="ws-edit-input"
                    (keyup.enter)="saveWsEdit(ws, $event)" (keyup.escape)="cancelWsEdit($event)">
-            <button class="ws-edit-ok" (click)="saveWsEdit(ws, $event)" title="Salva">&#10003;</button>
-            <button class="ws-edit-no" (click)="cancelWsEdit($event)" title="Annulla">&#10005;</button>
+            <button class="ws-edit-ok" (click)="saveWsEdit(ws, $event)" title="Salva"><app-icon [icon]="icons.tick" [size]="14" /></button>
+            <button class="ws-edit-no" (click)="cancelWsEdit($event)" title="Annulla"><app-icon [icon]="icons.cancel" [size]="14" /></button>
           </div>
         } @else {
           <a [routerLink]="['/workspaces', ws.id]" routerLinkActive="active" class="ws-item">
             <span class="ws-dot"></span>
             <span class="name">{{ ws.name }}</span>
             <span class="ws-actions">
-              <button (click)="startWsEdit(ws, $event)" title="Rinomina">&#9998;</button>
-              <button class="del" (click)="deleteWorkspace(ws, $event)" title="Elimina">&#128465;</button>
+              <button (click)="startWsEdit(ws, $event)" title="Rinomina"><app-icon [icon]="icons.edit" [size]="14" /></button>
+              <button class="del" (click)="deleteWorkspace(ws, $event)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
             </span>
           </a>
         }
@@ -44,7 +43,7 @@
         </div>
       }
       <button class="sb-logout" (click)="logout()" title="Logout">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <app-icon [icon]="icons.logout" [size]="16" />
       </button>
     </div>
   </aside>
@@ -52,10 +51,10 @@
   <main class="main">
     @if (noWorkspaces()) {
       <div class="no-ws">
-        <div class="no-ws-ico">&#128640;</div>
+        <div class="no-ws-ico"><app-icon [icon]="icons.rocket" [size]="48" /></div>
         <h2>Benvenuto in Mimeo AI</h2>
         <p>Crea il tuo primo workspace per iniziare a generare contenuti LinkedIn con l'intelligenza artificiale.</p>
-        <button class="btn btn-primary" (click)="openWsModal()">+ Crea Workspace</button>
+        <button class="btn btn-primary" (click)="openWsModal()"><app-icon [icon]="icons.plus" [size]="14" /> Crea Workspace</button>
       </div>
     } @else {
       <router-outlet />
@@ -69,7 +68,7 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-h">
         <h3>Nuovo Workspace</h3>
-        <button class="mx" (click)="closeWsModal()">&#x2715;</button>
+        <button class="mx" (click)="closeWsModal()"><app-icon [icon]="icons.cancel" [size]="16" /></button>
       </div>
       <div class="modal-b">
         <div class="fg">

@@ -33,6 +33,6 @@ export class ClaudeProvider implements AiProvider {
   }
 
   listModels(): string[] {
-    return ['claude-sonnet-4-20250514', 'claude-haiku-4-20250414'];
+    return ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'];
   }
 }

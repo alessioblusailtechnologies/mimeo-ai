@@ -4,10 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { UpperCasePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { WorkspaceService, Workspace } from '../../../core/services/workspace.service';
+import { IconComponent } from '../icon/icon.component';
+import { LogoComponent } from '../logo/logo.component';
+import {
+  Logout01Icon,
+  Tick01Icon,
+  Cancel01Icon,
+  PencilEdit01Icon,
+  Delete01Icon,
+  Rocket01Icon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, UpperCasePipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, UpperCasePipe, IconComponent, LogoComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss'
 })
@@ -23,6 +34,17 @@ export class LayoutComponent implements OnInit {
   // Edit workspace (inline in sidebar)
   editingWsId = signal<string | null>(null);
   editWsName = '';
+
+  // Icons
+  readonly icons = {
+    logout: Logout01Icon,
+    tick: Tick01Icon,
+    cancel: Cancel01Icon,
+    edit: PencilEdit01Icon,
+    delete: Delete01Icon,
+    rocket: Rocket01Icon,
+    plus: PlusSignIcon,
+  };
 
   constructor(
     protected authService: AuthService,

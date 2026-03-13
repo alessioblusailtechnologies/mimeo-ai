@@ -123,28 +123,7 @@
 .logo-row {
   display: flex;
   align-items: center;
-  gap: 10px;
   margin-bottom: 4px;
-}
-
-.logo-mark {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #415a77, #778da9);
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-size: 13px;
-  color: #e0e1dd;
-  flex-shrink: 0;
-}
-
-.auth-card h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-1);
 }
 
 .subtitle {

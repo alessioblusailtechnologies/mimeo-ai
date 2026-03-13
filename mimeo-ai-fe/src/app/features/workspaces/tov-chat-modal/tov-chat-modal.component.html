@@ -1,0 +1,91 @@
+<div class="overlay" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-h">
+      <h3>
+        @if (step() === 'platform') { Nuovo Tone of Voice }
+        @if (step() === 'chat') { Definisci il tuo stile }
+        @if (step() === 'done') { Tone of Voice creato }
+      </h3>
+      <button class="mx" (click)="close()"><app-icon [icon]="icons.close" [size]="16" /></button>
+    </div>
+
+    <!-- Step 1: Platform select -->
+    @if (step() === 'platform') {
+      <div class="modal-b platform-step">
+        <p class="step-desc">Scegli la piattaforma per cui vuoi creare il tuo Tone of Voice.</p>
+        <div class="platform-grid">
+          @for (p of platforms; track p.id) {
+            <button class="platform-card" (click)="selectPlatform(p.id)">
+              <app-icon [icon]="p.icon" [size]="28" />
+              <span>{{ p.name }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Chat -->
+    @if (step() === 'chat') {
+      <div class="chat-area">
+        <div class="chat-messages" #messagesContainer>
+          @if (!showChat()) {
+            <div class="chat-welcome">
+              <app-icon [icon]="icons.sparkles" [size]="32" />
+              <h4>Raccontami di te</h4>
+              <p>Rispondi alle mie domande e creeremo insieme un tone of voice unico per i tuoi contenuti.</p>
+              <div class="cw-hint">Inizia descrivendo chi sei e che tipo di contenuti vuoi creare.</div>
+            </div>
+          }
+
+          @for (msg of chatMessages(); track $index) {
+            <div class="chat-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+              @if (msg.role === 'assistant') {
+                <div class="msg-avatar">M</div>
+              }
+              <div class="msg-bubble" [innerHTML]="msg.content | markdown"></div>
+            </div>
+          }
+
+          @if (chatLoading()) {
+            <div class="chat-msg assistant">
+              <div class="msg-avatar">M</div>
+              <div class="msg-bubble typing-indicator">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="chat-input-bar">
+          <input type="text" [(ngModel)]="chatInput"
+                 placeholder="Scrivi la tua risposta..."
+                 (keyup.enter)="sendChat()" [disabled]="chatLoading()">
+          <button (click)="sendChat()" [disabled]="chatLoading() || !chatInput.trim()">
+            @if (chatLoading()) {
+              <span class="spinner-sm"></span>
+            } @else {
+              <app-icon [icon]="icons.send" [size]="16" />
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 3: Done -->
+    @if (step() === 'done') {
+      <div class="modal-b done-step">
+        @if (chatResult(); as result) {
+          <div class="done-card">
+            <div class="done-icon"><app-icon [icon]="icons.check" [size]="40" /></div>
+            <h4>{{ result.toneOfVoice.name }}</h4>
+            @if (result.toneOfVoice.description) {
+              <p>{{ result.toneOfVoice.description }}</p>
+            }
+          </div>
+          <p class="done-hint">Ora puoi selezionare questo Tone of Voice quando crei o modifichi un agente.</p>
+          <button class="btn-done" (click)="done()">Chiudi</button>
+        }
+      </div>
+    }
+  </div>
+</div>

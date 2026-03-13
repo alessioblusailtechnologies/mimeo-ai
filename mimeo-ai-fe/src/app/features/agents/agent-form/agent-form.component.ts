@@ -1,18 +1,24 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { SlicePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AgentService, CreateAgentDto } from '../../../core/services/agent.service';
-import { ChatService, ChatMessage, ChatResponse } from '../../../core/services/chat.service';
+import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import {
+  ArrowLeft01Icon,
+  SparklesIcon,
+  PencilEdit01Icon,
+  CheckmarkCircle01Icon,
+} from '@hugeicons/core-free-icons';
 
 const MODEL_OPTIONS: Record<string, string[]> = {
-  claude: ['claude-sonnet-4-20250514', 'claude-haiku-4-20250414'],
+  claude: ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'],
   openai: ['gpt-4o', 'gpt-4o-mini'],
 };
 
 @Component({
   selector: 'app-agent-form',
-  imports: [FormsModule, RouterLink, SlicePipe],
+  imports: [FormsModule, IconComponent],
   templateUrl: './agent-form.component.html',
   styleUrl: './agent-form.component.scss'
 })
@@ -23,32 +29,28 @@ export class AgentFormComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
-  // Mode: 'chat' or 'manual'
-  mode = signal<'chat' | 'manual'>('chat');
-
-  // Manual form
+  // Form
   form: CreateAgentDto = {
     name: '',
     tone: 'professional',
     ai_provider: 'claude',
-    ai_model: 'claude-sonnet-4-20250514',
+    ai_model: 'claude-opus-4-6',
   };
 
-  targetAudience = '';
-  writingStyleGuidelines = '';
-  customSystemPrompt = '';
-  scheduleEnabled = false;
-  scheduleCron = '';
   scheduleBrief = '';
 
   tones = ['professional', 'creative', 'technical', 'casual', 'inspirational', 'educational'];
+  toneOfVoices = signal<ToneOfVoice[]>([]);
+  selectedTovId = '';
+  toneMode = signal<'custom' | 'preset'>('preset');
 
-  // Chat
-  chatMessages = signal<ChatMessage[]>([]);
-  chatLoading = signal(false);
-  chatResults = signal<ChatResponse['results'] | null>(null);
-  chatInput = '';
-  showChat = computed(() => this.chatMessages().length > 0);
+  // Icons
+  readonly icons = {
+    arrowLeft: ArrowLeft01Icon,
+    sparkles: SparklesIcon,
+    edit: PencilEdit01Icon,
+    checkmark: CheckmarkCircle01Icon,
+  };
 
   get modelOptions(): string[] {
     return MODEL_OPTIONS[this.form.ai_provider] || [];
@@ -56,18 +58,23 @@ export class AgentFormComponent implements OnInit {
 
   constructor(
     private agentService: AgentService,
-    private chatService: ChatService,
+    private tovService: ToneOfVoiceService,
     protected router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
+    this.tovService.list(this.wsId).subscribe(t => {
+      this.toneOfVoices.set(t);
+      if (t.length > 0 && !this.isEdit) {
+        this.toneMode.set('custom');
+      }
+    });
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit = true;
       this.agentId = id;
-      this.mode.set('manual');
       this.agentService.getById(this.wsId, id).subscribe(agent => {
         this.form = {
           name: agent.name,
@@ -75,12 +82,13 @@ export class AgentFormComponent implements OnInit {
           ai_provider: agent.ai_provider,
           ai_model: agent.ai_model,
         };
-        this.targetAudience = agent.target_audience || '';
-        this.writingStyleGuidelines = agent.writing_style_guidelines || '';
-        this.customSystemPrompt = agent.custom_system_prompt || '';
-        this.scheduleEnabled = agent.schedule_enabled;
-        this.scheduleCron = agent.schedule_cron || '';
+        this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';
+        if (this.selectedTovId) {
+          this.toneMode.set('custom');
+        } else {
+          this.toneMode.set('preset');
+        }
       });
     }
   }
@@ -90,18 +98,23 @@ export class AgentFormComponent implements OnInit {
     this.form.ai_model = models?.[0] || '';
   }
 
+  selectTov(id: string) {
+    this.selectedTovId = this.selectedTovId === id ? '' : id;
+  }
+
+  selectPresetTone(tone: string) {
+    this.form.tone = tone;
+    this.selectedTovId = '';
+  }
+
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
 
     const dto: CreateAgentDto = {
       ...this.form,
-      target_audience: this.targetAudience || undefined,
-      writing_style_guidelines: this.writingStyleGuidelines || undefined,
-      custom_system_prompt: this.customSystemPrompt || undefined,
+      tone_of_voice_id: this.selectedTovId || undefined,
       schedule_brief: this.scheduleBrief || undefined,
-      schedule_enabled: this.scheduleEnabled,
-      schedule_cron: this.scheduleEnabled ? (this.scheduleCron || undefined) : undefined,
     };
 
     const req = this.isEdit && this.agentId
@@ -115,32 +128,6 @@ export class AgentFormComponent implements OnInit {
         this.loading.set(false);
       },
     });
-  }
-
-  sendChat() {
-    if (!this.chatInput.trim()) return;
-    const message = this.chatInput.trim();
-    const history = this.chatMessages();
-    this.chatMessages.set([...history, { role: 'user', content: message }]);
-    this.chatLoading.set(true);
-    this.chatInput = '';
-    this.chatService.send(this.wsId, message, history).subscribe({
-      next: (response) => {
-        this.chatMessages.set([...this.chatMessages(), { role: 'assistant', content: response.message }]);
-        if (response.done && response.results) {
-          this.chatResults.set(response.results);
-        }
-        this.chatLoading.set(false);
-      },
-      error: () => {
-        this.chatMessages.set([...this.chatMessages(), { role: 'assistant', content: 'Si è verificato un errore. Riprova.' }]);
-        this.chatLoading.set(false);
-      },
-    });
-  }
-
-  goToWorkspace() {
-    this.router.navigate(['/workspaces', this.wsId]);
   }
 
   goBack() {

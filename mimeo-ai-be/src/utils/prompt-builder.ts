@@ -1,10 +1,25 @@
 import type { Agent } from '../types/agent.types.js';
+import type { ToneOfVoice } from '../types/tone-of-voice.types.js';
 
-export function buildSystemPrompt(agent: Agent): string {
+export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null): string {
   const parts: string[] = [];
 
   parts.push('You are a LinkedIn content writer.');
-  parts.push(`Writing tone: ${agent.tone}.`);
+
+  if (toneOfVoice) {
+    parts.push(toneOfVoice.system_prompt_fragment);
+
+    if (toneOfVoice.example_posts && toneOfVoice.example_posts.length > 0) {
+      const examples = toneOfVoice.example_posts
+        .map((post, i) => `--- Example ${i + 1} ---\n${post}`)
+        .join('\n\n');
+      parts.push(
+        `Here are examples of the writing style you should follow. Study their tone, structure, formatting, and voice carefully and replicate that style:\n\n${examples}`
+      );
+    }
+  } else {
+    parts.push(`Writing tone: ${agent.tone}.`);
+  }
 
   if (agent.target_audience) {
     parts.push(`Target audience: ${agent.target_audience}.`);

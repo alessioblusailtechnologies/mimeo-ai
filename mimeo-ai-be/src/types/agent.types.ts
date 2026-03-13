@@ -7,6 +7,7 @@ export interface Agent {
   workspace_id: string;
   name: string;
   tone: AgentTone;
+  tone_of_voice_id: string | null;
   target_audience: string | null;
   writing_style_guidelines: string | null;
   custom_system_prompt: string | null;
@@ -23,6 +24,7 @@ export interface Agent {
 export interface CreateAgentDto {
   name: string;
   tone: AgentTone;
+  tone_of_voice_id?: string | null;
   target_audience?: string;
   writing_style_guidelines?: string;
   custom_system_prompt?: string;
@@ -36,6 +38,7 @@ export interface CreateAgentDto {
 export interface UpdateAgentDto {
   name?: string;
   tone?: AgentTone;
+  tone_of_voice_id?: string | null;
   target_audience?: string;
   writing_style_guidelines?: string;
   custom_system_prompt?: string;

@@ -1,14 +1,30 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Subscription, filter } from 'rxjs';
 import { WorkspaceService, Workspace } from '../../../core/services/workspace.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { PostService, Post, PostStatus } from '../../../core/services/post.service';
+import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TovChatModalComponent } from '../tov-chat-modal/tov-chat-modal.component';
+import {
+  ArtificialIntelligence01Icon,
+  File01Icon,
+  Settings01Icon,
+  DashboardSquare01Icon,
+  Menu01Icon,
+  Clock01Icon,
+  PlayIcon,
+  PencilEdit01Icon,
+  Delete01Icon,
+  PlusSignIcon,
+  VoiceIcon,
+} from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-workspace-detail',
-  imports: [RouterLink, RouterOutlet, DatePipe, SlicePipe],
+  imports: [RouterLink, RouterOutlet, DatePipe, SlicePipe, IconComponent, TovChatModalComponent],
   templateUrl: './workspace-detail.component.html',
   styleUrl: './workspace-detail.component.scss'
 })
@@ -16,7 +32,8 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   workspace = signal<Workspace | null>(null);
   agents = signal<Agent[]>([]);
   posts = signal<Post[]>([]);
-  activeTab = signal<'agents' | 'contents'>('agents');
+  toneOfVoices = signal<ToneOfVoice[]>([]);
+  activeTab = signal<'agents' | 'contents' | 'tov'>('agents');
   activeFilter = signal<PostStatus | 'all'>('all');
   isChildRoute = signal(false);
   agentView = signal<'card' | 'list'>('card');
@@ -24,7 +41,29 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   triggerLoading = signal<string | null>(null);
   triggerError = signal('');
   currentTime = signal(new Date());
+  showTovModal = signal(false);
   wsId = '';
+
+  agentMap = computed(() => {
+    const map: Record<string, string> = {};
+    for (const a of this.agents()) map[a.id] = a.name;
+    return map;
+  });
+
+  // Icons
+  readonly icons = {
+    agents: ArtificialIntelligence01Icon,
+    file: File01Icon,
+    settings: Settings01Icon,
+    gridView: DashboardSquare01Icon,
+    listView: Menu01Icon,
+    clock: Clock01Icon,
+    play: PlayIcon,
+    edit: PencilEdit01Icon,
+    delete: Delete01Icon,
+    plus: PlusSignIcon,
+    voice: VoiceIcon,
+  };
 
   private routerSub!: Subscription;
   private timerInterval!: ReturnType<typeof setInterval>;
@@ -33,6 +72,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     private workspaceService: WorkspaceService,
     private agentService: AgentService,
     private postService: PostService,
+    private tovService: ToneOfVoiceService,
     private route: ActivatedRoute,
     protected router: Router
   ) {}
@@ -60,9 +100,13 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   private updateRouteState() {
     const url = this.router.url.split('?')[0];
     const base = `/workspaces/${this.wsId}`;
+    const wasChild = this.isChildRoute();
 
     if (url === base || url === base + '/') {
       this.isChildRoute.set(false);
+      if (wasChild) {
+        this.loadAll();
+      }
     } else {
       this.isChildRoute.set(true);
       if (url.includes('/posts/')) {
@@ -73,7 +117,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  switchTab(tab: 'agents' | 'contents') {
+  switchTab(tab: 'agents' | 'contents' | 'tov') {
     this.activeTab.set(tab);
     if (this.isChildRoute()) {
       this.router.navigate(['/workspaces', this.wsId]);
@@ -81,17 +125,25 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     if (tab === 'contents') {
       this.loadPosts();
     }
+    if (tab === 'tov') {
+      this.loadTovs();
+    }
   }
 
   loadAll() {
     this.workspaceService.getById(this.wsId).subscribe(ws => this.workspace.set(ws));
     this.agentService.list(this.wsId).subscribe(a => this.agents.set(a));
     this.loadPosts();
+    this.loadTovs();
   }
 
   loadPosts() {
     const status = this.activeFilter() === 'all' ? undefined : this.activeFilter() as PostStatus;
     this.postService.list(this.wsId, status).subscribe(p => this.posts.set(p));
+  }
+
+  loadTovs() {
+    this.tovService.list(this.wsId).subscribe(t => this.toneOfVoices.set(t));
   }
 
   filterBy(status: PostStatus | 'all') {
@@ -125,5 +177,15 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
         this.triggerError.set(err.error?.error || 'Errore durante la generazione del post.');
       },
     });
+  }
+
+  deleteTov(id: string) {
+    if (!confirm('Eliminare questo Tone of Voice?')) return;
+    this.tovService.delete(this.wsId, id).subscribe(() => this.loadTovs());
+  }
+
+  onTovCreated() {
+    this.showTovModal.set(false);
+    this.loadTovs();
   }
 }

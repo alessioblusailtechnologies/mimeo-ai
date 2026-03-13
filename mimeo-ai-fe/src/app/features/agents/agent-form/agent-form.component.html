@@ -1,193 +1,103 @@
 <div class="page">
   <div class="page-header">
-    <button class="btn-back" (click)="goBack()">&larr; Indietro</button>
+    <button class="btn-back" (click)="goBack()"><app-icon [icon]="icons.arrowLeft" [size]="16" /> Indietro</button>
     <h2>{{ isEdit ? 'Modifica Agent' : 'Nuovo Agent' }}</h2>
   </div>
-
-  <!-- Mode tabs (only in create mode) -->
-  @if (!isEdit) {
-    <div class="mode-tabs">
-      <button class="mode-tab" [class.active]="mode() === 'chat'" (click)="mode.set('chat')">
-        <span class="mode-ico">&#10024;</span> AI Assistant
-      </button>
-      <button class="mode-tab" [class.active]="mode() === 'manual'" (click)="mode.set('manual')">
-        <span class="mode-ico">&#9998;</span> Manuale
-      </button>
-    </div>
-  }
 
   @if (error()) {
     <div class="error-banner">{{ error() }}</div>
   }
 
-  <!-- ===== CHAT MODE ===== -->
-  @if (mode() === 'chat' && !isEdit) {
-    <div class="chat-container">
-      <!-- Messages area -->
-      <div class="chat-messages">
-        @if (!showChat()) {
-          <div class="chat-welcome">
-            <div class="cw-ico">&#10024;</div>
-            <h3>Crea con l'AI</h3>
-            <p>Descrivi cosa vuoi creare e l'assistente ti guiderà nella configurazione dell'agente e nella generazione dei contenuti.</p>
-            <div class="cw-examples">
-              <span class="cw-label">Esempi:</span>
-              <button class="cw-example" (click)="chatInput = 'Creami 3 post su LinkedIn che parlano dell\'AI nella scuola'">
-                "Creami 3 post sull'AI nella scuola"
+  <form class="form-card" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="field">
+        <label for="name">Agent Name</label>
+        <input id="name" type="text" [(ngModel)]="form.name" name="name"
+               placeholder="e.g. LinkedIn Pro Writer" required>
+      </div>
+      <div class="field">
+        <label for="provider">AI Provider</label>
+        <select id="provider" [(ngModel)]="form.ai_provider" name="ai_provider"
+                (ngModelChange)="onProviderChange()">
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label for="model">AI Model</label>
+        <select id="model" [(ngModel)]="form.ai_model" name="ai_model">
+          @for (model of modelOptions; track model) {
+            <option [value]="model">{{ model }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Tone of Voice</label>
+        <div class="tone-switch">
+          <button type="button" class="tone-opt" [class.active]="toneMode() === 'custom'" (click)="toneMode.set('custom')">
+            <app-icon [icon]="icons.sparkles" [size]="14" /> Personalizzato
+          </button>
+          <button type="button" class="tone-opt" [class.active]="toneMode() === 'preset'" (click)="toneMode.set('preset')">
+            <app-icon [icon]="icons.edit" [size]="14" /> Preconfigurato
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tone selection -->
+    <div class="tone-section">
+      @if (toneMode() === 'custom') {
+        @if (toneOfVoices().length === 0) {
+          <div class="tone-empty">
+            <span>Nessun Tone of Voice personalizzato.</span>
+            <span class="tone-empty-hint">Puoi crearne uno dalla sezione "Tone of Voice" nel workspace.</span>
+          </div>
+        } @else {
+          <div class="tone-grid">
+            @for (tov of toneOfVoices(); track tov.id) {
+              <button type="button" class="tone-card" [class.selected]="selectedTovId === tov.id"
+                      (click)="selectTov(tov.id)">
+                <span class="tc-platform">{{ tov.platform_type }}</span>
+                <span class="tc-name">{{ tov.name }}</span>
+                @if (tov.description) {
+                  <span class="tc-desc">{{ tov.description }}</span>
+                }
+                @if (selectedTovId === tov.id) {
+                  <span class="tc-check"><app-icon [icon]="icons.checkmark" [size]="14" /></span>
+                }
               </button>
-              <button class="cw-example" (click)="chatInput = 'Genera un post tecnico su come usare TypeScript nel 2026'">
-                "Un post tecnico su TypeScript nel 2026"
-              </button>
-              <button class="cw-example" (click)="chatInput = 'Voglio un agente che scriva post motivazionali per startup founder'">
-                "Post motivazionali per startup founder"
-              </button>
-            </div>
+            }
           </div>
         }
+      }
 
-        @if (showChat()) {
-          @for (msg of chatMessages(); track $index) {
-            <div class="chat-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
-              @if (msg.role === 'assistant') {
-                <div class="msg-avatar">M</div>
-              }
-              <div class="msg-bubble">{{ msg.content }}</div>
-            </div>
+      @if (toneMode() === 'preset') {
+        <div class="tone-presets">
+          @for (tone of tones; track tone) {
+            <button type="button" class="tone-preset" [class.selected]="form.tone === tone && !selectedTovId"
+                    (click)="selectPresetTone(tone)">
+              {{ tone }}
+            </button>
           }
-
-          @if (chatLoading()) {
-            <div class="chat-msg assistant">
-              <div class="msg-avatar">M</div>
-              <div class="msg-bubble typing-indicator">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-          }
-
-          @if (chatResults(); as results) {
-            <div class="chat-results">
-              <div class="cr-header">&#9989; Contenuti creati</div>
-              <div class="cr-agent">Agente: <strong>{{ results.agent.name }}</strong></div>
-              <div class="cr-posts">
-                @for (post of results.posts; track post.id) {
-                  <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="cr-post">
-                    <span class="status status-draft">draft</span>
-                    <span class="cr-post-text">{{ post.content | slice:0:100 }}...</span>
-                  </a>
-                }
-              </div>
-              <button class="cr-done" (click)="goToWorkspace()">Vai al Workspace</button>
-            </div>
-          }
-        }
-      </div>
-
-      <!-- Chat input (bottom) -->
-      @if (!chatResults()) {
-        <div class="chat-input-bar">
-          <input type="text" [(ngModel)]="chatInput"
-                 placeholder="Descrivi cosa vuoi creare..."
-                 (keyup.enter)="sendChat()" [disabled]="chatLoading()">
-          <button (click)="sendChat()" [disabled]="chatLoading() || !chatInput.trim()">
-            @if (chatLoading()) {
-              <span class="spinner-sm"></span>
-            } @else {
-              &#9654;
-            }
-          </button>
         </div>
       }
     </div>
-  }
 
-  <!-- ===== MANUAL MODE ===== -->
-  @if (mode() === 'manual' || isEdit) {
-    <form class="form-card" (ngSubmit)="onSubmit()">
-      <div class="form-row">
-        <div class="field">
-          <label for="name">Agent Name</label>
-          <input id="name" type="text" [(ngModel)]="form.name" name="name"
-                 placeholder="e.g. LinkedIn Pro Writer" required>
-        </div>
-        <div class="field">
-          <label for="tone">Tone</label>
-          <select id="tone" [(ngModel)]="form.tone" name="tone">
-            @for (tone of tones; track tone) {
-              <option [value]="tone">{{ tone }}</option>
-            }
-          </select>
-        </div>
-      </div>
+    <div class="field">
+      <label for="brief">Brief / Topic</label>
+      <textarea id="brief" [(ngModel)]="scheduleBrief" name="schedule_brief"
+                rows="3" placeholder="Describe what the agent should write about when triggered..." required></textarea>
+      <span class="field-hint">This is the topic/instructions the agent will use to generate content.</span>
+    </div>
 
-      <div class="form-row">
-        <div class="field">
-          <label for="provider">AI Provider</label>
-          <select id="provider" [(ngModel)]="form.ai_provider" name="ai_provider"
-                  (ngModelChange)="onProviderChange()">
-            <option value="claude">Claude (Anthropic)</option>
-            <option value="openai">OpenAI</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="model">AI Model</label>
-          <select id="model" [(ngModel)]="form.ai_model" name="ai_model">
-            @for (model of modelOptions; track model) {
-              <option [value]="model">{{ model }}</option>
-            }
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="audience">Target Audience</label>
-        <input id="audience" type="text" [(ngModel)]="targetAudience" name="target_audience"
-               placeholder="e.g. Tech professionals and startup founders">
-      </div>
-
-      <div class="field">
-        <label for="style">Writing Style Guidelines</label>
-        <textarea id="style" [(ngModel)]="writingStyleGuidelines" name="writing_style_guidelines"
-                  rows="3" placeholder="e.g. Use short paragraphs, include actionable insights..."></textarea>
-      </div>
-
-      <div class="field">
-        <label for="prompt">Custom System Prompt</label>
-        <textarea id="prompt" [(ngModel)]="customSystemPrompt" name="custom_system_prompt"
-                  rows="4" placeholder="Additional instructions for the AI..."></textarea>
-      </div>
-
-      <div class="field">
-        <label for="brief">Brief / Topic</label>
-        <textarea id="brief" [(ngModel)]="scheduleBrief" name="schedule_brief"
-                  rows="3" placeholder="Describe what the agent should write about when triggered..." required></textarea>
-        <span class="field-hint">This is the topic/instructions the agent will use to generate content.</span>
-      </div>
-
-      <!-- Schedule Section -->
-      <div class="schedule-section">
-        <div class="field-inline">
-          <label for="scheduleEnabled">
-            <input id="scheduleEnabled" type="checkbox" [(ngModel)]="scheduleEnabled" name="schedule_enabled">
-            Enable Scheduling
-          </label>
-        </div>
-
-        @if (scheduleEnabled) {
-          <div class="field">
-            <label for="scheduleCron">Cron Expression</label>
-            <input id="scheduleCron" type="text" [(ngModel)]="scheduleCron" name="schedule_cron"
-                   placeholder="e.g. 0 9 * * 1 (every Monday at 9am)">
-            <span class="field-hint">Standard cron format: minute hour day month weekday</span>
-          </div>
-        }
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" (click)="goBack()">Annulla</button>
-        <button type="submit" class="btn-primary" [disabled]="loading()">
-          {{ loading() ? 'Salvando...' : (isEdit ? 'Aggiorna Agent' : 'Crea Agent') }}
-        </button>
-      </div>
-    </form>
-  }
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="goBack()">Annulla</button>
+      <button type="submit" class="btn-primary" [disabled]="loading()">
+        {{ loading() ? 'Salvando...' : (isEdit ? 'Aggiorna Agent' : 'Crea Agent') }}
+      </button>
+    </div>
+  </form>
 </div>

@@ -3,10 +3,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { PostService, Post, Generation } from '../../../core/services/post.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-post-detail',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, IconComponent, MarkdownPipe],
   templateUrl: './post-detail.component.html',
   styleUrl: './post-detail.component.scss'
 })
@@ -20,6 +23,10 @@ export class PostDetailComponent implements OnInit {
   actionLoading = signal('');
   copied = signal(false);
   wsId = '';
+
+  readonly icons = {
+    arrowLeft: ArrowLeft01Icon,
+  };
 
   constructor(
     private postService: PostService,

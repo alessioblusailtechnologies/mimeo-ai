@@ -1,0 +1,72 @@
+<div class="overlay" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-h">
+      <div class="modal-h-l">
+        <span class="tov-platform">{{ tov.platform_type }}</span>
+        <h3>{{ tov.name }}</h3>
+      </div>
+      <button class="mx" (click)="close()"><app-icon [icon]="icons.close" [size]="16" /></button>
+    </div>
+
+    @if (tov.description) {
+      <div class="tov-desc">{{ tov.description }}</div>
+    }
+
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab() === 'chat'" (click)="activeTab.set('chat')">Conversazione</button>
+      <button class="tab" [class.active]="activeTab() === 'prompt'" (click)="activeTab.set('prompt')">Prompt generato</button>
+    </div>
+
+    <div class="modal-body">
+      @if (activeTab() === 'chat') {
+        @if (chatHistory.length === 0) {
+          <div class="empty-state">Nessuna conversazione salvata per questo Tone of Voice.</div>
+        } @else {
+          <div class="chat-messages">
+            @for (msg of chatHistory; track $index) {
+              <div class="chat-msg" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                @if (msg.role === 'assistant') {
+                  <div class="msg-avatar">M</div>
+                }
+                <div class="msg-bubble" [innerHTML]="msg.content | markdown"></div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      @if (activeTab() === 'prompt') {
+        <div class="prompt-section">
+          <div class="prompt-label">System Prompt Fragment</div>
+          <div class="prompt-content" [innerHTML]="tov.system_prompt_fragment | markdown"></div>
+        </div>
+
+        @if (tov.example_posts && tov.example_posts.length > 0) {
+          <div class="prompt-section">
+            <div class="prompt-label">Post di esempio ({{ tov.example_posts.length }})</div>
+            @for (post of tov.example_posts; track $index) {
+              <div class="example-post">
+                <span class="example-num">#{{ $index + 1 }}</span>
+                <div class="example-text">{{ post }}</div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (tov.style_profile; as sp) {
+          <div class="prompt-section">
+            <div class="prompt-label">Style Profile</div>
+            <div class="style-tags">
+              @for (entry of styleEntries(sp); track entry[0]) {
+                <div class="style-row">
+                  <span class="style-key">{{ entry[0] }}</span>
+                  <span class="style-val">{{ entry[1] }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

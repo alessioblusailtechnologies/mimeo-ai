@@ -14,7 +14,7 @@ import { Component, Input } from '@angular/core';
         <div class="wordmark">
           <span class="name">mimeo<span class="accent">.ai</span></span>
           @if (showTagline) {
-            <span class="tagline">il tuo tono di voce, in ogni contenuto</span>
+            <span class="tagline">your voice, in every content</span>
           }
         </div>
       }

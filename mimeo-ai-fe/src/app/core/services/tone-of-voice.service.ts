@@ -13,6 +13,7 @@ export interface ToneOfVoice {
   style_profile: Record<string, unknown>;
   system_prompt_fragment: string;
   example_posts: string[];
+  conversation_history: TovChatMessage[] | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

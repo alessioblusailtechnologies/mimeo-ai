@@ -8,6 +8,7 @@ import { PostService, Post, PostStatus } from '../../../core/services/post.servi
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TovChatModalComponent } from '../tov-chat-modal/tov-chat-modal.component';
+import { TovDetailModalComponent } from '../tov-detail-modal/tov-detail-modal.component';
 import {
   ArtificialIntelligence01Icon,
   File01Icon,
@@ -24,7 +25,7 @@ import {
 
 @Component({
   selector: 'app-workspace-detail',
-  imports: [RouterLink, RouterOutlet, DatePipe, SlicePipe, IconComponent, TovChatModalComponent],
+  imports: [RouterLink, RouterOutlet, DatePipe, SlicePipe, IconComponent, TovChatModalComponent, TovDetailModalComponent],
   templateUrl: './workspace-detail.component.html',
   styleUrl: './workspace-detail.component.scss'
 })
@@ -42,6 +43,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   triggerError = signal('');
   currentTime = signal(new Date());
   showTovModal = signal(false);
+  selectedTov = signal<ToneOfVoice | null>(null);
   wsId = '';
 
   agentMap = computed(() => {

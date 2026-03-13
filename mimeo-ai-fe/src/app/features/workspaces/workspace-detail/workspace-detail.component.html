@@ -217,7 +217,7 @@
         } @else {
           <div class="tov-grid">
             @for (tov of toneOfVoices(); track tov.id) {
-              <div class="tov-card">
+              <div class="tov-card" (click)="selectedTov.set(tov)">
                 <div class="tov-top">
                   <span class="tov-platform">{{ tov.platform_type }}</span>
                   <span class="tov-date">{{ tov.created_at | date:'shortDate' }}</span>
@@ -244,7 +244,7 @@
                 }
                 <div class="tov-footer">
                   <div></div>
-                  <button class="ac-del" (click)="deleteTov(tov.id)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
+                  <button class="ac-del" (click)="deleteTov(tov.id); $event.stopPropagation()" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
                 </div>
               </div>
             }
@@ -257,4 +257,8 @@
 
 @if (showTovModal()) {
   <app-tov-chat-modal [wsId]="wsId" (created)="onTovCreated()" (closed)="onTovCreated()" />
+}
+
+@if (selectedTov(); as tov) {
+  <app-tov-detail-modal [tov]="tov" (closed)="selectedTov.set(null)" />
 }

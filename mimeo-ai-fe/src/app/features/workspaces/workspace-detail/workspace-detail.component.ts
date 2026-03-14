@@ -6,6 +6,7 @@ import { WorkspaceService, Workspace } from '../../../core/services/workspace.se
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { PostService, Post, PostStatus } from '../../../core/services/post.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TovChatModalComponent } from '../tov-chat-modal/tov-chat-modal.component';
 import { TovDetailModalComponent } from '../tov-detail-modal/tov-detail-modal.component';
@@ -76,7 +77,8 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     private postService: PostService,
     private tovService: ToneOfVoiceService,
     private route: ActivatedRoute,
-    protected router: Router
+    protected router: Router,
+    protected themeService: ThemeService
   ) {}
 
   ngOnInit() {

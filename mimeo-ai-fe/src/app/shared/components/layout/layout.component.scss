@@ -64,7 +64,7 @@
 .btn-sm{padding:5px 10px;font-size:11.5px}
 
 /* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(13,27,42,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:100}
+.overlay{position:fixed;inset:0;background:var(--shadow-overlay);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:100}
 .modal{background:var(--bg-1);border:1px solid var(--border);border-radius:12px;width:520px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:modalUp .2s ease}
 @keyframes modalUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .modal-h{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}

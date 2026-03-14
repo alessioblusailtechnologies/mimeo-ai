@@ -101,7 +101,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at center, rgba(13,27,42,.85) 0%, rgba(13,27,42,.5) 60%, rgba(13,27,42,.75) 100%);
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--bg-0) 85%, transparent) 0%, color-mix(in srgb, var(--bg-0) 50%, transparent) 60%, color-mix(in srgb, var(--bg-0) 75%, transparent) 100%);
   pointer-events: none;
 }
 
@@ -111,12 +111,12 @@
   z-index: 2;
   width: 100%;
   max-width: 420px;
-  background: rgba(19, 31, 48, .92);
+  background: color-mix(in srgb, var(--bg-1) 92%, transparent);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 36px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, .5), 0 0 0 1px rgba(119, 141, 169, .08);
+  box-shadow: 0 24px 80px var(--shadow-overlay), 0 0 0 1px var(--accent-bg);
   animation: fadeIn .4s ease both;
 }
 

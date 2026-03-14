@@ -37,7 +37,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   toneOfVoices = signal<ToneOfVoice[]>([]);
   activeFilter = signal<PostStatus | 'all'>('all');
   isChildRoute = signal(false);
-  agentView = signal<'card' | 'list'>('card');
+  agentView = signal<'card' | 'list'>('list');
   contentView = signal<'card' | 'list'>('list');
   triggerLoading = signal<string | null>(null);
   triggerError = signal('');
@@ -48,6 +48,18 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   agentMap = computed(() => {
     const map: Record<string, string> = {};
     for (const a of this.agents()) map[a.id] = a.name;
+    return map;
+  });
+
+  agentFullMap = computed(() => {
+    const map: Record<string, Agent> = {};
+    for (const a of this.agents()) map[a.id] = a;
+    return map;
+  });
+
+  tovMap = computed(() => {
+    const map: Record<string, ToneOfVoice> = {};
+    for (const t of this.toneOfVoices()) map[t.id] = t;
     return map;
   });
 
@@ -181,5 +193,28 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   onTovCreated() {
     this.showTovModal.set(false);
     this.loadTovs();
+  }
+
+  getAgentTov(agent: Agent): string {
+    if (agent.tone_of_voice_id) {
+      const tov = this.tovMap()[agent.tone_of_voice_id];
+      return tov?.name || agent.tone;
+    }
+    return agent.tone;
+  }
+
+  getPostTov(post: Post): string {
+    const agent = this.agentFullMap()[post.agent_id];
+    if (!agent) return '-';
+    return this.getAgentTov(agent);
+  }
+
+  getPostChannel(post: Post): string {
+    const agent = this.agentFullMap()[post.agent_id];
+    if (agent?.tone_of_voice_id) {
+      const tov = this.tovMap()[agent.tone_of_voice_id];
+      return tov?.platform_type || '-';
+    }
+    return '-';
   }
 }

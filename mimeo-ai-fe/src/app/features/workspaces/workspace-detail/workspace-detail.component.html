@@ -25,17 +25,49 @@
           <div class="toolbar">
             <div class="toolbar-l">
               <h3 class="section-title">Agents</h3>
+            </div>
+            <div class="toolbar-r">
               <div class="view-toggle">
-                <button [class.active]="agentView() === 'card'" (click)="agentView.set('card')" title="Card view">
-                  <app-icon [icon]="icons.gridView" [size]="16" />
-                </button>
                 <button [class.active]="agentView() === 'list'" (click)="agentView.set('list')" title="List view">
                   <app-icon [icon]="icons.listView" [size]="16" />
                 </button>
+                <button [class.active]="agentView() === 'card'" (click)="agentView.set('card')" title="Card view">
+                  <app-icon [icon]="icons.gridView" [size]="16" />
+                </button>
               </div>
+              <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary"><app-icon [icon]="icons.plus" [size]="14" /> Nuovo Agent</a>
             </div>
-            <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn btn-primary"><app-icon [icon]="icons.plus" [size]="14" /> Nuovo Agent</a>
           </div>
+
+          <!-- List View -->
+          @if (agentView() === 'list') {
+            <div class="agents-table">
+              <div class="table-header agents-header">
+                <span>Nome</span>
+                <span>Provider</span>
+                <span>Modello</span>
+                <span>Tone of Voice</span>
+                <span>Azioni</span>
+              </div>
+              @for (agent of agents(); track agent.id) {
+                <div class="table-row agents-row">
+                  <span class="td-agent-name">{{ agent.name }}</span>
+                  <span class="td-provider">
+                    <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
+                  </span>
+                  <span class="td-model mono">{{ agent.ai_model }}</span>
+                  <span class="td-tone">{{ getAgentTov(agent) }}</span>
+                  <span class="td-actions">
+                    <button (click)="triggerAgent(agent)" [disabled]="triggerLoading() === agent.id" title="Genera">
+                      @if (triggerLoading() === agent.id) { <span class="spinner-sm"></span> } @else { <app-icon [icon]="icons.play" [size]="14" /> }
+                    </button>
+                    <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Modifica"><app-icon [icon]="icons.edit" [size]="14" /></a>
+                    <button class="del" (click)="deleteAgent(agent.id)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
+                  </span>
+                </div>
+              }
+            </div>
+          }
 
           <!-- Card View -->
           @if (agentView() === 'card') {
@@ -75,32 +107,6 @@
               }
             </div>
           }
-
-          <!-- List View -->
-          @if (agentView() === 'list') {
-            <div class="agents-list">
-              @for (agent of agents(); track agent.id) {
-                <div class="agent-row">
-                  <div class="agent-row-l">
-                    <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
-                    <span class="agent-row-name">{{ agent.name }}</span>
-                    <span class="agent-row-meta mono">{{ agent.ai_model }}</span>
-                    <span class="agent-row-meta">{{ agent.tone }}</span>
-                    @if (agent.schedule_enabled) {
-                      <span class="agent-row-sched"><app-icon [icon]="icons.clock" [size]="14" /></span>
-                    }
-                  </div>
-                  <div class="agent-row-actions">
-                    <button (click)="triggerAgent(agent)" [disabled]="triggerLoading() === agent.id" title="Trigger">
-                      @if (triggerLoading() === agent.id) { <span class="spinner-sm"></span> } @else { <app-icon [icon]="icons.play" [size]="14" /> }
-                    </button>
-                    <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Edit"><app-icon [icon]="icons.edit" [size]="14" /></a>
-                    <button class="del" (click)="deleteAgent(agent.id)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
         }
       }
 
@@ -109,6 +115,8 @@
         <div class="toolbar">
           <div class="toolbar-l">
             <h3 class="section-title">Contents</h3>
+          </div>
+          <div class="toolbar-r">
             <div class="filter-group">
               <button class="filter-btn" [class.active]="activeFilter() === 'all'" (click)="filterBy('all')">Tutti</button>
               <button class="filter-btn" [class.active]="activeFilter() === 'draft'" (click)="filterBy('draft')">Bozze</button>
@@ -134,22 +142,30 @@
           </div>
         } @else {
           @if (contentView() === 'list') {
-            <div class="posts-list">
+            <div class="posts-table">
+              <div class="table-header">
+                <span class="th-content">Contenuto</span>
+                <span class="th-tov">Tone of Voice</span>
+                <span class="th-channel">Canale</span>
+                <span class="th-agent">Agent</span>
+                <span class="th-status">Stato</span>
+              </div>
               @for (post of posts(); track post.id) {
-                <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="post-row">
-                  <div class="post-row-l">
+                <a [routerLink]="['/workspaces', wsId, 'posts', post.id]" class="table-row">
+                  <span class="td-content">
                     @if (post.title) {
-                      <span class="post-title">{{ post.title }}</span>
+                      <span class="td-title">{{ post.title }}</span>
                     }
-                    <span class="post-excerpt">{{ post.content | slice:0:120 }}{{ post.content.length > 120 ? '...' : '' }}</span>
-                  </div>
-                  <div class="post-row-r">
-                    @if (agentMap()[post.agent_id]; as agentName) {
-                      <span class="post-agent">{{ agentName }}</span>
-                    }
+                    <span class="td-excerpt">{{ post.content | slice:0:100 }}{{ post.content.length > 100 ? '...' : '' }}</span>
+                  </span>
+                  <span class="td-tov">{{ getPostTov(post) }}</span>
+                  <span class="td-channel">
+                    <span class="channel-badge">{{ getPostChannel(post) }}</span>
+                  </span>
+                  <span class="td-agent">{{ agentMap()[post.agent_id] || '-' }}</span>
+                  <span class="td-status">
                     <span class="status" [class]="'status-' + post.status">{{ post.status }}</span>
-                    <span class="post-date">{{ post.created_at | date:'short' }}</span>
-                  </div>
+                  </span>
                 </a>
               }
             </div>

@@ -72,13 +72,13 @@
     <!-- Narrow Sidebar -->
     <aside class="sidebar">
       <nav class="nav">
-        <button class="nav-item" [class.active]="navService.activeSection() === 'agents'" (click)="setSection('agents')" title="Agents">
-          <span class="nav-ico"><app-icon [icon]="icons.agents" [size]="20" /></span>
-          <span class="nav-label">Agents</span>
-        </button>
         <button class="nav-item" [class.active]="navService.activeSection() === 'contents'" (click)="setSection('contents')" title="Contents">
           <span class="nav-ico"><app-icon [icon]="icons.file" [size]="20" /></span>
           <span class="nav-label">Contents</span>
+        </button>
+        <button class="nav-item" [class.active]="navService.activeSection() === 'agents'" (click)="setSection('agents')" title="Agents">
+          <span class="nav-ico"><app-icon [icon]="icons.agents" [size]="20" /></span>
+          <span class="nav-label">Agents</span>
         </button>
         <button class="nav-item" [class.active]="navService.activeSection() === 'tov'" (click)="setSection('tov')" title="Tone of Voice">
           <span class="nav-ico"><app-icon [icon]="icons.voice" [size]="20" /></span>

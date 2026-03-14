@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Subscription, filter } from 'rxjs';
@@ -6,7 +6,7 @@ import { WorkspaceService, Workspace } from '../../../core/services/workspace.se
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { PostService, Post, PostStatus } from '../../../core/services/post.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
-import { ThemeService } from '../../../core/services/theme.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TovChatModalComponent } from '../tov-chat-modal/tov-chat-modal.component';
 import { TovDetailModalComponent } from '../tov-detail-modal/tov-detail-modal.component';
@@ -35,14 +35,12 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   agents = signal<Agent[]>([]);
   posts = signal<Post[]>([]);
   toneOfVoices = signal<ToneOfVoice[]>([]);
-  activeTab = signal<'agents' | 'contents' | 'tov'>('agents');
   activeFilter = signal<PostStatus | 'all'>('all');
   isChildRoute = signal(false);
   agentView = signal<'card' | 'list'>('card');
   contentView = signal<'card' | 'list'>('list');
   triggerLoading = signal<string | null>(null);
   triggerError = signal('');
-  currentTime = signal(new Date());
   showTovModal = signal(false);
   selectedTov = signal<ToneOfVoice | null>(null);
   wsId = '';
@@ -69,7 +67,6 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   };
 
   private routerSub!: Subscription;
-  private timerInterval!: ReturnType<typeof setInterval>;
 
   constructor(
     private workspaceService: WorkspaceService,
@@ -78,8 +75,17 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     private tovService: ToneOfVoiceService,
     private route: ActivatedRoute,
     protected router: Router,
-    protected themeService: ThemeService
-  ) {}
+    protected navService: NavigationService
+  ) {
+    // React to sidebar section changes for data refresh
+    effect(() => {
+      const section = this.navService.activeSection();
+      if (this.wsId) {
+        if (section === 'contents') this.loadPosts();
+        if (section === 'tov') this.loadTovs();
+      }
+    });
+  }
 
   ngOnInit() {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
@@ -92,13 +98,10 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
       filter(e => e instanceof NavigationEnd)
     ).subscribe(() => this.updateRouteState());
     this.updateRouteState();
-
-    this.timerInterval = setInterval(() => this.currentTime.set(new Date()), 30_000);
   }
 
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
-    clearInterval(this.timerInterval);
   }
 
   private updateRouteState() {
@@ -114,23 +117,10 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     } else {
       this.isChildRoute.set(true);
       if (url.includes('/posts/')) {
-        this.activeTab.set('contents');
+        this.navService.activeSection.set('contents');
       } else if (url.includes('/agents/')) {
-        this.activeTab.set('agents');
+        this.navService.activeSection.set('agents');
       }
-    }
-  }
-
-  switchTab(tab: 'agents' | 'contents' | 'tov') {
-    this.activeTab.set(tab);
-    if (this.isChildRoute()) {
-      this.router.navigate(['/workspaces', this.wsId]);
-    }
-    if (tab === 'contents') {
-      this.loadPosts();
-    }
-    if (tab === 'tov') {
-      this.loadTovs();
     }
   }
 
@@ -173,7 +163,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.triggerLoading.set(null);
         this.loadPosts();
-        this.activeTab.set('contents');
+        this.navService.activeSection.set('contents');
         this.router.navigate(['/workspaces', this.wsId, 'posts', result.post.id]);
       },
       error: (err) => {

@@ -1,65 +1,106 @@
 <div class="layout">
-  <aside class="sidebar">
-    <div class="sb-head">
-      <a class="logo" (click)="workspaces().length ? null : null">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-l">
+      <a class="logo">
         <app-logo size="sm" />
       </a>
-    </div>
 
-    <div class="sb-sec">
-      <div class="sb-t">
-        <span>Workspace</span>
-        <button (click)="openWsModal()" title="Nuovo Workspace"><app-icon [icon]="icons.plus" [size]="14" /></button>
-      </div>
-    </div>
-
-    <nav class="ws-list">
-      @for (ws of workspaces(); track ws.id) {
-        @if (editingWsId() === ws.id) {
-          <div class="ws-edit-row">
-            <input type="text" [(ngModel)]="editWsName" class="ws-edit-input"
-                   (keyup.enter)="saveWsEdit(ws, $event)" (keyup.escape)="cancelWsEdit($event)">
-            <button class="ws-edit-ok" (click)="saveWsEdit(ws, $event)" title="Salva"><app-icon [icon]="icons.tick" [size]="14" /></button>
-            <button class="ws-edit-no" (click)="cancelWsEdit($event)" title="Annulla"><app-icon [icon]="icons.cancel" [size]="14" /></button>
-          </div>
-        } @else {
-          <a [routerLink]="['/workspaces', ws.id]" routerLinkActive="active" class="ws-item">
+      @if (workspaces().length > 0) {
+        <div class="ws-selector">
+          <button class="ws-trigger" (click)="toggleWsDropdown($event)">
             <span class="ws-dot"></span>
-            <span class="name">{{ ws.name }}</span>
-            <span class="ws-actions">
-              <button (click)="startWsEdit(ws, $event)" title="Rinomina"><app-icon [icon]="icons.edit" [size]="14" /></button>
-              <button class="del" (click)="deleteWorkspace(ws, $event)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
-            </span>
-          </a>
-        }
-      }
-    </nav>
+            <span class="ws-name">{{ activeWsName() }}</span>
+            <svg class="ws-chevron" [class.open]="wsDropdownOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
 
-    <div class="sb-foot">
-      @if (authService.user(); as userData) {
-        <div class="sb-user-info">
-          <span class="sb-avatar">{{ (userData.user.email || 'U')[0] | uppercase }}</span>
-          <span class="sb-email">{{ userData.user.email || 'User' }}</span>
+          @if (wsDropdownOpen()) {
+            <div class="dropdown-backdrop" (click)="wsDropdownOpen.set(false)"></div>
+            <div class="ws-dropdown">
+              @for (ws of workspaces(); track ws.id) {
+                @if (editingWsId() === ws.id) {
+                  <div class="ws-dd-edit">
+                    <input type="text" [(ngModel)]="editWsName" class="ws-dd-input"
+                           (keyup.enter)="saveWsEdit(ws, $event)" (keyup.escape)="cancelWsEdit($event)">
+                    <button class="ws-dd-ok" (click)="saveWsEdit(ws, $event)"><app-icon [icon]="icons.tick" [size]="12" /></button>
+                    <button class="ws-dd-no" (click)="cancelWsEdit($event)"><app-icon [icon]="icons.cancel" [size]="12" /></button>
+                  </div>
+                } @else {
+                  <a class="ws-dd-item" [class.active]="activeWsId() === ws.id"
+                     [routerLink]="['/workspaces', ws.id]"
+                     (click)="wsDropdownOpen.set(false)">
+                    <span class="ws-dd-dot"></span>
+                    <span class="ws-dd-name">{{ ws.name }}</span>
+                    <span class="ws-dd-actions" (click)="$event.stopPropagation(); $event.preventDefault()">
+                      <button (click)="startWsEdit(ws, $event)"><app-icon [icon]="icons.edit" [size]="12" /></button>
+                      <button class="del" (click)="deleteWorkspace(ws, $event)"><app-icon [icon]="icons.delete" [size]="12" /></button>
+                    </span>
+                  </a>
+                }
+              }
+              <div class="ws-dd-divider"></div>
+              <button class="ws-dd-new" (click)="openWsModal(); wsDropdownOpen.set(false)">
+                <app-icon [icon]="icons.plus" [size]="14" /> Nuovo Workspace
+              </button>
+            </div>
+          }
         </div>
+      } @else {
+        <button class="btn btn-primary btn-sm" (click)="openWsModal()"><app-icon [icon]="icons.plus" [size]="14" /> Nuovo Workspace</button>
       }
-      <button class="sb-logout" (click)="logout()" title="Logout">
+    </div>
+
+    <div class="topbar-r">
+      <span class="topbar-time">{{ currentTime() | date:'EEEE d MMM, HH:mm' }}</span>
+      <button class="theme-toggle" (click)="themeService.toggle()" [title]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'">
+        @if (themeService.theme() === 'dark') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        }
+      </button>
+      @if (authService.user(); as userData) {
+        <span class="topbar-avatar">{{ (userData.user.email || 'U')[0] | uppercase }}</span>
+      }
+      <button class="topbar-logout" (click)="logout()" title="Logout">
         <app-icon [icon]="icons.logout" [size]="16" />
       </button>
     </div>
-  </aside>
+  </header>
 
-  <main class="main">
-    @if (noWorkspaces()) {
-      <div class="no-ws">
-        <div class="no-ws-ico"><app-icon [icon]="icons.rocket" [size]="48" /></div>
-        <h2>Benvenuto in Mimeo AI</h2>
-        <p>Crea il tuo primo workspace per iniziare a generare contenuti LinkedIn con l'intelligenza artificiale.</p>
-        <button class="btn btn-primary" (click)="openWsModal()"><app-icon [icon]="icons.plus" [size]="14" /> Crea Workspace</button>
-      </div>
-    } @else {
-      <router-outlet />
-    }
-  </main>
+  <div class="body">
+    <!-- Narrow Sidebar -->
+    <aside class="sidebar">
+      <nav class="nav">
+        <button class="nav-item" [class.active]="navService.activeSection() === 'agents'" (click)="setSection('agents')" title="Agents">
+          <span class="nav-ico"><app-icon [icon]="icons.agents" [size]="20" /></span>
+          <span class="nav-label">Agents</span>
+        </button>
+        <button class="nav-item" [class.active]="navService.activeSection() === 'contents'" (click)="setSection('contents')" title="Contents">
+          <span class="nav-ico"><app-icon [icon]="icons.file" [size]="20" /></span>
+          <span class="nav-label">Contents</span>
+        </button>
+        <button class="nav-item" [class.active]="navService.activeSection() === 'tov'" (click)="setSection('tov')" title="Tone of Voice">
+          <span class="nav-ico"><app-icon [icon]="icons.voice" [size]="20" /></span>
+          <span class="nav-label">ToV</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      @if (noWorkspaces()) {
+        <div class="no-ws">
+          <div class="no-ws-ico"><app-icon [icon]="icons.rocket" [size]="48" /></div>
+          <h2>Benvenuto in Mimeo AI</h2>
+          <p>Crea il tuo primo workspace per iniziare a generare contenuti con l'intelligenza artificiale.</p>
+          <button class="btn btn-primary" (click)="openWsModal()"><app-icon [icon]="icons.plus" [size]="14" /> Crea Workspace</button>
+        </div>
+      } @else {
+        <router-outlet />
+      }
+    </main>
+  </div>
 </div>
 
 <!-- Modal: Nuovo Workspace -->

@@ -1,9 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { UpperCasePipe } from '@angular/common';
+import { UpperCasePipe, DatePipe } from '@angular/common';
+import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { WorkspaceService, Workspace } from '../../../core/services/workspace.service';
+import { ThemeService } from '../../../core/services/theme.service';
+import { NavigationService } from '../../../core/services/navigation.service';
 import { IconComponent } from '../icon/icon.component';
 import { LogoComponent } from '../logo/logo.component';
 import {
@@ -14,26 +17,38 @@ import {
   Delete01Icon,
   Rocket01Icon,
   PlusSignIcon,
+  ArtificialIntelligence01Icon,
+  File01Icon,
+  VoiceIcon,
 } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, UpperCasePipe, IconComponent, LogoComponent],
+  imports: [RouterOutlet, RouterLink, FormsModule, UpperCasePipe, DatePipe, IconComponent, LogoComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss'
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   workspaces = signal<Workspace[]>([]);
   noWorkspaces = signal(false);
+  wsDropdownOpen = signal(false);
+  activeWsId = signal<string | null>(null);
+  currentTime = signal(new Date());
 
   // Modal state
   showWsModal = signal(false);
   newWsName = '';
   newWsDesc = '';
 
-  // Edit workspace (inline in sidebar)
+  // Edit workspace
   editingWsId = signal<string | null>(null);
   editWsName = '';
+
+  activeWsName = computed(() => {
+    const id = this.activeWsId();
+    const ws = this.workspaces().find(w => w.id === id);
+    return ws?.name || 'Seleziona Workspace';
+  });
 
   // Icons
   readonly icons = {
@@ -44,16 +59,41 @@ export class LayoutComponent implements OnInit {
     delete: Delete01Icon,
     rocket: Rocket01Icon,
     plus: PlusSignIcon,
+    agents: ArtificialIntelligence01Icon,
+    file: File01Icon,
+    voice: VoiceIcon,
   };
+
+  private routerSub!: Subscription;
+  private timerInterval!: ReturnType<typeof setInterval>;
 
   constructor(
     protected authService: AuthService,
     private workspaceService: WorkspaceService,
-    private router: Router
+    private router: Router,
+    protected themeService: ThemeService,
+    protected navService: NavigationService
   ) {}
 
   ngOnInit() {
     this.loadWorkspaces();
+    this.updateActiveWs();
+
+    this.routerSub = this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe(() => this.updateActiveWs());
+
+    this.timerInterval = setInterval(() => this.currentTime.set(new Date()), 30_000);
+  }
+
+  ngOnDestroy() {
+    this.routerSub?.unsubscribe();
+    clearInterval(this.timerInterval);
+  }
+
+  private updateActiveWs() {
+    const match = this.router.url.match(/\/workspaces\/([^\/\?]+)/);
+    this.activeWsId.set(match ? match[1] : null);
   }
 
   loadWorkspaces() {
@@ -61,7 +101,6 @@ export class LayoutComponent implements OnInit {
       this.workspaces.set(ws);
       if (ws.length > 0) {
         this.noWorkspaces.set(false);
-        // Auto-navigate to first workspace if on root
         const url = this.router.url;
         if (url === '/' || url === '') {
           this.router.navigate(['/workspaces', ws[0].id]);
@@ -70,6 +109,23 @@ export class LayoutComponent implements OnInit {
         this.noWorkspaces.set(true);
       }
     });
+  }
+
+  toggleWsDropdown(event: Event) {
+    event.stopPropagation();
+    this.wsDropdownOpen.set(!this.wsDropdownOpen());
+  }
+
+  setSection(section: 'agents' | 'contents' | 'tov') {
+    this.navService.activeSection.set(section);
+    const wsId = this.activeWsId();
+    if (wsId) {
+      const url = this.router.url.split('?')[0];
+      const base = `/workspaces/${wsId}`;
+      if (url !== base && url !== base + '/') {
+        this.router.navigate(['/workspaces', wsId]);
+      }
+    }
   }
 
   openWsModal() {
@@ -92,7 +148,7 @@ export class LayoutComponent implements OnInit {
     });
   }
 
-  // Inline edit in sidebar
+  // Inline edit
   startWsEdit(ws: Workspace, event: Event) {
     event.stopPropagation();
     event.preventDefault();
@@ -121,9 +177,9 @@ export class LayoutComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
     if (!confirm(`Eliminare "${ws.name}" e tutti i suoi agenti/contenuti?`)) return;
+    this.wsDropdownOpen.set(false);
     this.workspaceService.delete(ws.id).subscribe(() => {
       this.loadWorkspaces();
-      // If we were viewing that workspace, go to first available
       if (this.router.url.includes(ws.id)) {
         const remaining = this.workspaces().filter(w => w.id !== ws.id);
         if (remaining.length > 0) {

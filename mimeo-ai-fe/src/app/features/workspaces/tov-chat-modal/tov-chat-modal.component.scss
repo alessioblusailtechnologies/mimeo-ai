@@ -304,6 +304,57 @@
 
 .done-icon { color: var(--green); }
 
+/* SCORE GRID */
+.score-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 16px;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.score-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+.score-value {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-l);
+}
+
+.score-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.trait-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cyan);
+  background: var(--cyan-bg);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
 .done-hint {
   font-size: 11.5px;
   color: var(--text-3);

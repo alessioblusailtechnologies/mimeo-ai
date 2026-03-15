@@ -5,6 +5,7 @@ import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
 import { ManualCopyPublisher } from './publishing/manual-copy.publisher.js';
 import { buildSystemPrompt, buildUserPrompt } from '../utils/prompt-builder.js';
+import { extractUrls, scrapeUrls, formatScrapedForPrompt, webSearch, formatSearchResultsForPrompt } from '../utils/scraper.js';
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 import type { Post, PostStatus, GenerateDraftDto, UpdatePostDto } from '../types/post.types.js';
 import type { Generation } from '../types/generation.types.js';
@@ -21,6 +22,45 @@ async function fetchToneOfVoice(agent: Agent, userId: string) {
   }
 }
 
+// Keywords that indicate the brief wants current/real-time information
+const SEARCH_KEYWORDS = /\b(ultime notizie|notizie recenti|attualit[àa]|news|trending|latest|recent|current|oggi|questa settimana|questo mese|aggiornament[io]|novit[àa]|tendenz[ae]|trend)\b/i;
+
+async function enrichBriefWithReferences(brief: string, referenceUrls?: string[], agentSourceUrls?: string[]): Promise<string> {
+  const parts: string[] = [];
+
+  // 1. Scrape explicit URLs from brief text, reference_urls param, and agent source URLs
+  const briefUrls = extractUrls(brief);
+  const allUrls = [...new Set([...briefUrls, ...(referenceUrls || []), ...(agentSourceUrls || [])])];
+
+  if (allUrls.length > 0) {
+    const scraped = await scrapeUrls(allUrls);
+    const formatted = formatScrapedForPrompt(scraped);
+    if (formatted) parts.push(formatted);
+  }
+
+  // 2. If the brief asks for current/latest info, do a web search
+  if (SEARCH_KEYWORDS.test(brief)) {
+    // Extract the core topic by removing common filler words
+    const searchQuery = brief
+      .replace(/https?:\/\/[^\s]+/g, '') // remove URLs
+      .slice(0, 150); // limit length
+    const searchResults = await webSearch(searchQuery, 3);
+    const formatted = formatSearchResultsForPrompt(searchResults);
+    if (formatted) {
+      parts.push(`\n\nThe following are real-time web search results relevant to the brief:\n\n${formatted}`);
+    }
+  }
+
+  return parts.join('');
+}
+
+function extractAgentSourceUrls(agent: Agent): string[] {
+  if (!agent.sources || agent.sources.length === 0) return [];
+  return agent.sources
+    .filter(s => s.type === 'url')
+    .map(s => s.value);
+}
+
 export async function generateDraft(
   workspaceId: string,
   dto: GenerateDraftDto,
@@ -30,7 +70,11 @@ export async function generateDraft(
   const tov = await fetchToneOfVoice(agent, userId);
 
   const systemPrompt = buildSystemPrompt(agent, tov);
-  const userPrompt = buildUserPrompt(dto.brief);
+
+  // Scrape any URLs found in the brief, reference_urls, or agent sources
+  const agentSourceUrls = extractAgentSourceUrls(agent);
+  const referenceContent = await enrichBriefWithReferences(dto.brief, dto.reference_urls, agentSourceUrls);
+  const userPrompt = buildUserPrompt(dto.brief, referenceContent || undefined);
 
   const aiProvider = getAiProvider(agent.ai_provider);
   const aiResponse = await aiProvider.generate({
@@ -73,7 +117,11 @@ export async function regenerate(
   const tov = await fetchToneOfVoice(agent, userId);
 
   const systemPrompt = buildSystemPrompt(agent, tov);
-  const userPrompt = buildUserPrompt(post.original_brief);
+
+  // Scrape any URLs found in the original brief + agent sources
+  const agentSourceUrls = extractAgentSourceUrls(agent);
+  const referenceContent = await enrichBriefWithReferences(post.original_brief, undefined, agentSourceUrls);
+  const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined);
 
   const aiProvider = getAiProvider(agent.ai_provider);
   const aiResponse = await aiProvider.generate({

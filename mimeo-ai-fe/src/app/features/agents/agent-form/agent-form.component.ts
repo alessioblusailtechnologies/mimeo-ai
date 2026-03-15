@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AgentService, CreateAgentDto } from '../../../core/services/agent.service';
+import { AgentService, CreateAgentDto, AgentSource, AgentSourceType } from '../../../core/services/agent.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import {
@@ -9,6 +9,10 @@ import {
   SparklesIcon,
   PencilEdit01Icon,
   CheckmarkCircle01Icon,
+  Link01Icon,
+  File01Icon,
+  Delete01Icon,
+  PlusSignIcon,
 } from '@hugeicons/core-free-icons';
 
 const MODEL_OPTIONS: Record<string, string[]> = {
@@ -44,12 +48,22 @@ export class AgentFormComponent implements OnInit {
   selectedTovId = '';
   toneMode = signal<'custom' | 'preset'>('preset');
 
+  // Sources
+  sources = signal<AgentSource[]>([]);
+  newSourceType = signal<AgentSourceType>('url');
+  newSourceValue = '';
+  newSourceLabel = '';
+
   // Icons
   readonly icons = {
     arrowLeft: ArrowLeft01Icon,
     sparkles: SparklesIcon,
     edit: PencilEdit01Icon,
     checkmark: CheckmarkCircle01Icon,
+    link: Link01Icon,
+    file: File01Icon,
+    delete: Delete01Icon,
+    plus: PlusSignIcon,
   };
 
   get modelOptions(): string[] {
@@ -84,6 +98,7 @@ export class AgentFormComponent implements OnInit {
         };
         this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';
+        this.sources.set(agent.sources || []);
         if (this.selectedTovId) {
           this.toneMode.set('custom');
         } else {
@@ -107,14 +122,47 @@ export class AgentFormComponent implements OnInit {
     this.selectedTovId = '';
   }
 
+  addSource() {
+    const value = this.newSourceValue.trim();
+    if (!value) return;
+
+    const source: AgentSource = {
+      type: this.newSourceType(),
+      value,
+      label: this.newSourceLabel.trim() || undefined,
+    };
+
+    this.sources.update(s => [...s, source]);
+    this.newSourceValue = '';
+    this.newSourceLabel = '';
+  }
+
+  removeSource(index: number) {
+    this.sources.update(s => s.filter((_, i) => i !== index));
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    this.sources.update(s => [...s, {
+      type: 'file' as AgentSourceType,
+      value: file.name,
+      label: file.name,
+    }]);
+    input.value = '';
+  }
+
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
 
+    const currentSources = this.sources();
     const dto: CreateAgentDto = {
       ...this.form,
       tone_of_voice_id: this.selectedTovId || undefined,
       schedule_brief: this.scheduleBrief || undefined,
+      sources: currentSources.length > 0 ? currentSources : undefined,
     };
 
     const req = this.isEdit && this.agentId

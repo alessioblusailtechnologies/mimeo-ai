@@ -86,6 +86,71 @@
       }
     </div>
 
+    <!-- Sources -->
+    <div class="sources-section">
+      <label class="section-label">Sources <span class="label-hint">(opzionale)</span></label>
+      <span class="field-hint" style="margin-bottom: 10px;">Aggiungi fonti che l'LLM utilizzerà per creare contenuti: URL web, file Excel, PDF, ecc.</span>
+
+      <!-- Existing sources list -->
+      @if (sources().length > 0) {
+        <div class="sources-list">
+          @for (source of sources(); track $index) {
+            <div class="source-item">
+              <div class="source-icon">
+                @if (source.type === 'url') {
+                  <app-icon [icon]="icons.link" [size]="14" />
+                } @else {
+                  <app-icon [icon]="icons.file" [size]="14" />
+                }
+              </div>
+              <div class="source-info">
+                <span class="source-type">{{ source.type === 'url' ? 'URL' : 'FILE' }}</span>
+                <span class="source-value">{{ source.label || source.value }}</span>
+              </div>
+              <button type="button" class="source-remove" (click)="removeSource($index)">
+                <app-icon [icon]="icons.delete" [size]="13" />
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Add source form -->
+      <div class="source-add">
+        <div class="source-type-switch">
+          <button type="button" class="stype-opt" [class.active]="newSourceType() === 'url'" (click)="newSourceType.set('url')">
+            <app-icon [icon]="icons.link" [size]="13" /> URL
+          </button>
+          <button type="button" class="stype-opt" [class.active]="newSourceType() === 'file'" (click)="newSourceType.set('file')">
+            <app-icon [icon]="icons.file" [size]="13" /> File
+          </button>
+        </div>
+
+        @if (newSourceType() === 'url') {
+          <div class="source-inputs">
+            <input type="text" [(ngModel)]="newSourceValue" name="newSourceValue"
+                   placeholder="https://example.com/article" class="source-input" />
+            <input type="text" [(ngModel)]="newSourceLabel" name="newSourceLabel"
+                   placeholder="Nome (opzionale)" class="source-label-input" />
+            <button type="button" class="btn-add-source" (click)="addSource()" [disabled]="!newSourceValue.trim()">
+              <app-icon [icon]="icons.plus" [size]="14" /> Aggiungi
+            </button>
+          </div>
+        }
+
+        @if (newSourceType() === 'file') {
+          <div class="source-inputs">
+            <label class="file-upload-btn">
+              <app-icon [icon]="icons.plus" [size]="14" /> Seleziona file
+              <input type="file" (change)="onFileSelected($event)"
+                     accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.txt,.json" hidden />
+            </label>
+            <span class="file-hint">PDF, Excel, CSV, Word, TXT, JSON</span>
+          </div>
+        }
+      </div>
+    </div>
+
     <div class="field">
       <label for="brief">Brief / Topic</label>
       <textarea id="brief" [(ngModel)]="scheduleBrief" name="schedule_brief"

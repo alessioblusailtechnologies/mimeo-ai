@@ -70,6 +70,7 @@ CREATE TABLE public.mimeo_agents (
   schedule_enabled BOOLEAN NOT NULL DEFAULT false,
   schedule_cron TEXT,
   schedule_brief TEXT,
+  sources JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

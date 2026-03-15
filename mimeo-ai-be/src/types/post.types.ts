@@ -18,6 +18,7 @@ export interface GenerateDraftDto {
   agent_id: string;
   brief: string;
   title?: string;
+  reference_urls?: string[];
 }
 
 export interface UpdatePostDto {

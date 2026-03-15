@@ -45,10 +45,12 @@ export class PostService {
     return `${environment.apiUrl}/workspaces/${wsId}/posts`;
   }
 
-  generate(wsId: string, agentId: string, brief: string, title?: string) {
+  generate(wsId: string, agentId: string, brief: string, title?: string, referenceUrls?: string[]) {
+    const body: Record<string, unknown> = { agent_id: agentId, brief, title };
+    if (referenceUrls?.length) body['reference_urls'] = referenceUrls;
     return this.http.post<ApiResponse<{ post: Post; generation: Generation }>>(
       `${this.url(wsId)}/generate`,
-      { agent_id: agentId, brief, title }
+      body
     ).pipe(map(r => r.data));
   }
 

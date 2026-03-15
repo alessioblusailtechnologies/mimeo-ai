@@ -9,6 +9,7 @@ export interface Config {
   ai: {
     anthropicApiKey: string;
     openaiApiKey: string;
+    tavilyApiKey: string;
   };
   cors: {
     origin: string;
@@ -34,6 +35,7 @@ export const config: Config = {
   ai: {
     anthropicApiKey: requireEnv('ANTHROPIC_API_KEY'),
     openaiApiKey: requireEnv('OPENAI_API_KEY'),
+    tavilyApiKey: requireEnv('TAVILY_API_KEY'),
   },
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:4200',

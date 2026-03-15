@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const agentSourceSchema = z.object({
+  type: z.enum(['url', 'file']),
+  value: z.string().min(1).max(2000),
+  label: z.string().max(200).optional(),
+});
+
 export const createAgentSchema = z.object({
   name: z.string().min(1).max(100),
   tone: z.enum(['professional', 'creative', 'technical', 'casual', 'inspirational', 'educational']),
@@ -12,6 +18,7 @@ export const createAgentSchema = z.object({
   schedule_enabled: z.boolean().optional(),
   schedule_cron: z.string().max(100).optional(),
   schedule_brief: z.string().max(5000).optional(),
+  sources: z.array(agentSourceSchema).max(20).optional(),
 });
 
 export const updateAgentSchema = createAgentSchema.partial();

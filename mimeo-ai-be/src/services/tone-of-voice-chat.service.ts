@@ -1,5 +1,6 @@
 import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
+import { extractUrls, scrapeUrls, formatScrapedForPrompt } from '../utils/scraper.js';
 import type { TovChatMessage, TovChatRequest, TovChatResponse } from '../types/tone-of-voice.types.js';
 
 const PLATFORM_CONTEXTS: Record<string, string> = {
@@ -20,8 +21,9 @@ Il tuo approccio:
 1. Fai domande mirate una alla volta per capire la personalità, lo stile e gli obiettivi dell'utente
 2. Adatta le domande in base alle risposte precedenti
 3. Sii conversazionale, amichevole e incisivo
-4. A un certo punto chiedi all'utente di incollare 2-3 post di esempio che rappresentano lo stile che vuole (post suoi o di altri che ammira). Spiega che può incollare il testo direttamente e che è opzionale ma molto utile per catturare lo stile
-5. Dopo 4-6 scambi, quando hai abbastanza informazioni, genera il profilo
+4. L'utente può incollare URL di post o articoli — il sistema li analizzerà automaticamente e il contenuto estratto apparirà nel messaggio. Analizza quel contenuto per capire lo stile
+5. A un certo punto chiedi all'utente di condividere 2-3 post di esempio (può incollare testo o URL) che rappresentano lo stile che vuole. Spiega che è opzionale ma molto utile
+6. Dopo 4-6 scambi, quando hai abbastanza informazioni, genera una PREVIEW del tono (NON il JSON finale)
 
 Domande da coprire (non necessariamente in quest'ordine, adattati al flusso):
 - Come vuoi essere percepito dal tuo pubblico?
@@ -33,11 +35,35 @@ Domande da coprire (non necessariamente in quest'ordine, adattati al flusso):
 - Come gestisci le call-to-action?
 - Usi emoji? Se sì, quanto frequentemente?
 - Preferisci frasi brevi e dirette o periodi più articolati?
-- IMPORTANTE: Chiedi di incollare 2-3 post di esempio (propri o di altri) che rappresentano lo stile desiderato. Se l'utente non ne ha o non vuole, va bene, procedi comunque
+- IMPORTANTE: Chiedi di condividere 2-3 post di esempio (testo o URL di post/articoli online). Se l'utente non ne ha, procedi comunque
 
 Rispondi SEMPRE in italiano.
 
-Quando hai raccolto abbastanza informazioni, concludi il messaggio con un blocco JSON:
+=== FASE PREVIEW ===
+Quando hai raccolto abbastanza informazioni (dopo almeno 3 domande), PRIMA di generare il profilo finale, mostra una PREVIEW al utente con questo formato:
+
+**Profilo stile rilevato:**
+- Formalità: [valore e breve spiegazione]
+- Umorismo: [valore e breve spiegazione]
+- Emozione: [valore e breve spiegazione]
+- Stile frasi: [valore e breve spiegazione]
+- Vocabolario: [valore e breve spiegazione]
+- Emoji: [valore e breve spiegazione]
+- Call-to-action: [valore e breve spiegazione]
+- Storytelling: [valore e breve spiegazione]
+- Tratti: [3-4 tratti principali]
+
+**Ecco un esempio di post scritto con il tuo stile:**
+
+[Genera qui un post di esempio di 150-200 parole sulla piattaforma scelta, che dimostri concretamente il tone of voice rilevato. Deve sembrare realistico e autentico.]
+
+---
+*Ti rispecchia? Conferma se sei soddisfatto, oppure dimmi cosa vorresti cambiare (es. "troppo formale", "più umorismo", "meno emoji").*
+
+NON generare il JSON in questa fase. Aspetta la conferma dell'utente.
+
+=== FASE FINALE ===
+Solo DOPO che l'utente ha confermato la preview (dice "sì", "ok", "confermo", "va bene", "perfetto" o simili), genera il profilo finale con il blocco JSON:
 \`\`\`json
 {
   "ready": true,
@@ -59,8 +85,11 @@ Quando hai raccolto abbastanza informazioni, concludi il messaggio con un blocco
 }
 \`\`\`
 
+Se l'utente chiede modifiche dopo la preview, adegua il profilo e mostra una nuova preview aggiornata. Ripeti finché l'utente non conferma.
+
 Regole importanti:
-- NON generare il JSON finché non hai fatto almeno 3 domande e ricevuto risposte
+- NON generare il JSON finché l'utente non ha confermato la preview
+- NON generare la preview prima di aver fatto almeno 3 domande
 - Il system_prompt_fragment deve essere MOLTO dettagliato e specifico, come un vero brief creativo
 - Il campo example_posts deve contenere i post di esempio che l'utente ha condiviso (testo completo, non riassunti). Se l'utente non ha fornito esempi, usa un array vuoto []
 - Il JSON deve essere valido e racchiuso tra i marker \`\`\`json \`\`\`
@@ -122,13 +151,25 @@ export async function processMessage(
 ): Promise<TovChatResponse> {
   const aiProvider = getAiProvider('claude');
   const systemPrompt = buildSystemPrompt(request.platform_type);
-  const userPrompt = buildConversation(request.history, request.message);
+
+  // Detect and scrape URLs in the user message
+  let enrichedMessage = request.message;
+  const urls = extractUrls(request.message);
+  if (urls.length > 0) {
+    const scraped = await scrapeUrls(urls);
+    const scrapedText = formatScrapedForPrompt(scraped);
+    if (scrapedText) {
+      enrichedMessage = `${request.message}\n\n[Il sistema ha analizzato automaticamente i link forniti dall'utente. Ecco il contenuto estratto:]${scrapedText}`;
+    }
+  }
+
+  const userPrompt = buildConversation(request.history, enrichedMessage);
 
   const aiResponse = await aiProvider.generate({
     systemPrompt,
     userPrompt,
     model: CHAT_MODEL,
-    maxTokens: 2048,
+    maxTokens: 3000,
   });
 
   const { action, cleanMessage } = extractJsonAction(aiResponse.content);
@@ -156,7 +197,12 @@ export async function processMessage(
     message: cleanMessage,
     done: true,
     result: {
-      toneOfVoice: { id: tov.id, name: tov.name, description: tov.description },
+      toneOfVoice: {
+        id: tov.id,
+        name: tov.name,
+        description: tov.description,
+      },
+      styleProfile: action.style_profile,
     },
   };
 }

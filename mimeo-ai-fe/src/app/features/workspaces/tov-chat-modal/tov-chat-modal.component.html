@@ -33,7 +33,7 @@
               <app-icon [icon]="icons.sparkles" [size]="32" />
               <h4>Raccontami di te</h4>
               <p>Rispondi alle mie domande e creeremo insieme un tone of voice unico per i tuoi contenuti.</p>
-              <div class="cw-hint">Inizia descrivendo chi sei e che tipo di contenuti vuoi creare.</div>
+              <div class="cw-hint">Puoi anche incollare URL di post o articoli che ti piacciono — li analizzeremo automaticamente.</div>
             </div>
           }
 
@@ -58,7 +58,7 @@
 
         <div class="chat-input-bar">
           <input type="text" [(ngModel)]="chatInput"
-                 placeholder="Scrivi la tua risposta..."
+                 placeholder="Scrivi la tua risposta o incolla un URL..."
                  (keyup.enter)="sendChat()" [disabled]="chatLoading()">
           <button (click)="sendChat()" [disabled]="chatLoading() || !chatInput.trim()">
             @if (chatLoading()) {
@@ -82,6 +82,67 @@
               <p>{{ result.toneOfVoice.description }}</p>
             }
           </div>
+
+          @if (result.styleProfile; as sp) {
+            <div class="score-grid">
+              @if (sp['formality']) {
+                <div class="score-item">
+                  <span class="score-label">Formalita</span>
+                  <span class="score-value">{{ sp['formality'] }}</span>
+                </div>
+              }
+              @if (sp['humor']) {
+                <div class="score-item">
+                  <span class="score-label">Umorismo</span>
+                  <span class="score-value">{{ sp['humor'] }}</span>
+                </div>
+              }
+              @if (sp['emotion']) {
+                <div class="score-item">
+                  <span class="score-label">Emozione</span>
+                  <span class="score-value">{{ sp['emotion'] }}</span>
+                </div>
+              }
+              @if (sp['sentence_style']) {
+                <div class="score-item">
+                  <span class="score-label">Stile frasi</span>
+                  <span class="score-value">{{ sp['sentence_style'] }}</span>
+                </div>
+              }
+              @if (sp['vocabulary']) {
+                <div class="score-item">
+                  <span class="score-label">Vocabolario</span>
+                  <span class="score-value">{{ sp['vocabulary'] }}</span>
+                </div>
+              }
+              @if (sp['emoji_usage']) {
+                <div class="score-item">
+                  <span class="score-label">Emoji</span>
+                  <span class="score-value">{{ sp['emoji_usage'] }}</span>
+                </div>
+              }
+              @if (sp['storytelling']) {
+                <div class="score-item">
+                  <span class="score-label">Storytelling</span>
+                  <span class="score-value">{{ sp['storytelling'] }}</span>
+                </div>
+              }
+              @if (sp['cta_style']) {
+                <div class="score-item">
+                  <span class="score-label">CTA</span>
+                  <span class="score-value">{{ sp['cta_style'] }}</span>
+                </div>
+              }
+            </div>
+            @if (sp['personality_traits']; as traits) {
+              <div class="score-traits">
+                @for (trait of $any(traits); track trait) {
+                  <span class="trait-tag">{{ trait }}</span>
+                }
+              </div>
+            }
+          }
+
           <p class="done-hint">Ora puoi selezionare questo Tone of Voice quando crei o modifichi un agente.</p>
           <button class="btn-done" (click)="done()">Chiudi</button>
         }

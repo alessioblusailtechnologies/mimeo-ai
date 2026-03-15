@@ -1,5 +1,12 @@
 export type AgentTone = 'professional' | 'creative' | 'technical' | 'casual' | 'inspirational' | 'educational';
 export type AiProvider = 'claude' | 'openai';
+export type AgentSourceType = 'url' | 'file';
+
+export interface AgentSource {
+  type: AgentSourceType;
+  value: string;
+  label?: string;
+}
 
 export interface Agent {
   id: string;
@@ -17,6 +24,7 @@ export interface Agent {
   schedule_enabled: boolean;
   schedule_cron: string | null;
   schedule_brief: string | null;
+  sources: AgentSource[];
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +41,7 @@ export interface CreateAgentDto {
   schedule_enabled?: boolean;
   schedule_cron?: string;
   schedule_brief?: string;
+  sources?: AgentSource[];
 }
 
 export interface UpdateAgentDto {
@@ -48,4 +57,5 @@ export interface UpdateAgentDto {
   schedule_enabled?: boolean;
   schedule_cron?: string;
   schedule_brief?: string;
+  sources?: AgentSource[];
 }

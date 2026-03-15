@@ -3,6 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs';
 
+export type AgentSourceType = 'url' | 'file';
+
+export interface AgentSource {
+  type: AgentSourceType;
+  value: string;        // URL or filename
+  label?: string;       // optional display name
+}
+
 export interface Agent {
   id: string;
   user_id: string;
@@ -19,6 +27,7 @@ export interface Agent {
   schedule_enabled: boolean;
   schedule_cron: string | null;
   schedule_brief: string | null;
+  sources: AgentSource[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +44,7 @@ export interface CreateAgentDto {
   schedule_enabled?: boolean;
   schedule_cron?: string;
   schedule_brief?: string;
+  sources?: AgentSource[];
 }
 
 interface ApiResponse<T> {

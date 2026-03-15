@@ -49,5 +49,6 @@ export interface TovChatResponse {
   done: boolean;
   result?: {
     toneOfVoice: { id: string; name: string; description: string | null };
+    styleProfile: Record<string, unknown>;
   };
 }

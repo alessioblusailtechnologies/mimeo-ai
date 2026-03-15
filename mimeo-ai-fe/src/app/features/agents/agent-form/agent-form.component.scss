@@ -239,6 +239,213 @@
   }
 }
 
+/* SOURCES SECTION */
+.sources-section {
+  margin-bottom: 16px;
+}
+
+.section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.label-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-3);
+  font-size: 10px;
+}
+
+.sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.source-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: .15s;
+
+  &:hover { border-color: var(--border-h); }
+}
+
+.source-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--accent-l);
+  flex-shrink: 0;
+}
+
+.source-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.source-type {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--cyan);
+}
+
+.source-value {
+  font-size: 12.5px;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source-remove {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: .15s;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  &:hover { color: var(--red); background: rgba(239, 68, 68, .1); }
+}
+
+.source-add {
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.source-type-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stype-opt {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: .15s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  &:hover { color: var(--text-2); border-color: var(--border-h); }
+  &.active { color: var(--accent-l); border-color: var(--accent); background: var(--accent-bg); }
+}
+
+.source-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.source-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  transition: .15s;
+
+  &:focus { border-color: var(--accent); }
+  &::placeholder { color: var(--text-3); }
+}
+
+.source-label-input {
+  width: 160px;
+  padding: 8px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 12.5px;
+  outline: none;
+  transition: .15s;
+
+  &:focus { border-color: var(--accent); }
+  &::placeholder { color: var(--text-3); }
+}
+
+.btn-add-source {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-l);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: .15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { background: var(--accent); color: #e0e1dd; }
+  &:disabled { opacity: .4; cursor: not-allowed; }
+}
+
+.file-upload-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-l);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: .15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  &:hover { background: var(--accent); color: #e0e1dd; }
+}
+
+.file-hint {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;

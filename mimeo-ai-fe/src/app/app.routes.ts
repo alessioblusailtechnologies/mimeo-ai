@@ -12,6 +12,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    path: 'linkedin/callback',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/workspaces/linkedin-callback/linkedin-callback.component').then(m => m.LinkedInCallbackComponent),
+  },
+  {
     path: '',
     component: LayoutComponent,
     canActivate: [authGuard],
@@ -20,6 +25,11 @@ export const routes: Routes = [
         path: 'workspaces/:wsId',
         loadComponent: () => import('./features/workspaces/workspace-detail/workspace-detail.component').then(m => m.WorkspaceDetailComponent),
         children: [
+          { path: '', redirectTo: 'contents', pathMatch: 'full' },
+          { path: 'agents', children: [] },
+          { path: 'contents', children: [] },
+          { path: 'tov', children: [] },
+          { path: 'integrations', children: [] },
           {
             path: 'agents/new',
             loadComponent: () => import('./features/agents/agent-form/agent-form.component').then(m => m.AgentFormComponent),

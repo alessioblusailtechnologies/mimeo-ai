@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { PostService, Post, Generation, PostImage } from '../../../core/services/post.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
+import { LinkedInService, LinkedInConnectionInfo } from '../../../core/services/linkedin.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
@@ -40,6 +41,9 @@ export class PostDetailComponent implements OnInit {
 
   agentHasImageGen = computed(() => this.agent()?.image_generation_enabled === true);
 
+  // LinkedIn
+  linkedInConnection = signal<LinkedInConnectionInfo | null>(null);
+
   versionsCount = computed(() => this.agent()?.versions_count || 1);
 
   // Initial versions (first N generations created together)
@@ -71,6 +75,7 @@ export class PostDetailComponent implements OnInit {
   constructor(
     private postService: PostService,
     private agentService: AgentService,
+    private linkedInService: LinkedInService,
     private route: ActivatedRoute,
     protected router: Router
   ) {}
@@ -81,6 +86,10 @@ export class PostDetailComponent implements OnInit {
     this.loadPost(id);
     this.postService.getGenerations(this.wsId, id).subscribe(gens => this.generations.set(gens));
     this.postService.getImages(this.wsId, id).subscribe(imgs => this.postImages.set(imgs));
+    this.linkedInService.getConnection(this.wsId).subscribe({
+      next: conn => this.linkedInConnection.set(conn),
+      error: () => {},
+    });
   }
 
   private loadPost(id: string) {

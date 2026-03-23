@@ -4,15 +4,24 @@ import * as generationRepo from '../repositories/generation.repository.js';
 import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
 import * as postImageService from './post-image.service.js';
+import * as linkedInRepo from '../repositories/linkedin.repository.js';
 import { ManualCopyPublisher } from './publishing/manual-copy.publisher.js';
+import { LinkedInPublisher } from './publishing/linkedin.publisher.js';
 import { buildSystemPrompt, buildUserPrompt, buildImagePrompt } from '../utils/prompt-builder.js';
 import { extractUrls, scrapeUrls, formatScrapedForPrompt, webSearch, formatSearchResultsForPrompt } from '../utils/scraper.js';
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 import type { Post, PostStatus, GenerateDraftDto, UpdatePostDto } from '../types/post.types.js';
 import type { Generation } from '../types/generation.types.js';
 import type { Agent } from '../types/agent.types.js';
+import type { Publisher } from './publishing/publisher.interface.js';
 
-const publisher = new ManualCopyPublisher();
+async function getPublisher(workspaceId: string, userId: string): Promise<Publisher> {
+  const connection = await linkedInRepo.findByWorkspaceId(workspaceId, userId);
+  if (connection && connection.linkedin_organization_id !== '__pending__') {
+    return new LinkedInPublisher(workspaceId, userId);
+  }
+  return new ManualCopyPublisher();
+}
 
 async function fetchToneOfVoice(agent: Agent, userId: string) {
   if (!agent.tone_of_voice_id) return null;
@@ -229,6 +238,7 @@ export async function publishPost(postId: string, userId: string): Promise<Post>
     throw new BadRequestError(`Cannot publish a post with status "${post.status}". Approve it first.`);
   }
 
+  const publisher = await getPublisher(post.workspace_id, userId);
   const result = await publisher.publish(post);
   if (!result.success) {
     throw new BadRequestError(result.error || 'Publishing failed');

@@ -5,6 +5,7 @@ import agentRoutes from './agent.routes.js';
 import postRoutes from './post.routes.js';
 import chatRoutes from './chat.routes.js';
 import tovRoutes from './tone-of-voice.routes.js';
+import linkedinRoutes from './linkedin.routes.js';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/workspaces/:wsId/agents', agentRoutes);
 router.use('/workspaces/:wsId/posts', postRoutes);
 router.use('/workspaces/:wsId/chat', chatRoutes);
 router.use('/workspaces/:wsId/tone-of-voice', tovRoutes);
+router.use('/workspaces/:wsId/linkedin', linkedinRoutes);
 
 export default router;

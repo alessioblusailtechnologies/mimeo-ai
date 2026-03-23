@@ -20,6 +20,7 @@ import {
   ArtificialIntelligence01Icon,
   File01Icon,
   VoiceIcon,
+  Link01Icon,
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -62,6 +63,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     agents: ArtificialIntelligence01Icon,
     file: File01Icon,
     voice: VoiceIcon,
+    integrations: Link01Icon,
   };
 
   private routerSub!: Subscription;
@@ -116,15 +118,11 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.wsDropdownOpen.set(!this.wsDropdownOpen());
   }
 
-  setSection(section: 'agents' | 'contents' | 'tov') {
+  setSection(section: 'agents' | 'contents' | 'tov' | 'integrations') {
     this.navService.activeSection.set(section);
     const wsId = this.activeWsId();
     if (wsId) {
-      const url = this.router.url.split('?')[0];
-      const base = `/workspaces/${wsId}`;
-      if (url !== base && url !== base + '/') {
-        this.router.navigate(['/workspaces', wsId]);
-      }
+      this.router.navigate(['/workspaces', wsId, section]);
     }
   }
 

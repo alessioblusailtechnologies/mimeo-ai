@@ -85,6 +85,12 @@
           <span class="nav-label">ToV</span>
         </button>
       </nav>
+      <div class="nav-bottom">
+        <button class="nav-item" [class.active]="navService.activeSection() === 'integrations'" (click)="setSection('integrations')" title="Integrations">
+          <span class="nav-ico"><app-icon [icon]="icons.integrations" [size]="20" /></span>
+          <span class="nav-label">Connect</span>
+        </button>
+      </div>
     </aside>
 
     <!-- Main Content -->

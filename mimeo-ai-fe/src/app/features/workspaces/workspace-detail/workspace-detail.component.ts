@@ -7,6 +7,7 @@ import { AgentService, Agent } from '../../../core/services/agent.service';
 import { PostService, Post, PostStatus } from '../../../core/services/post.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
 import { NavigationService } from '../../../core/services/navigation.service';
+import { LinkedInService, LinkedInConnectionInfo, LinkedInOrganization } from '../../../core/services/linkedin.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TovChatModalComponent } from '../tov-chat-modal/tov-chat-modal.component';
 import { TovDetailModalComponent } from '../tov-detail-modal/tov-detail-modal.component';
@@ -44,6 +45,12 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   showTovModal = signal(false);
   selectedTov = signal<ToneOfVoice | null>(null);
   wsId = '';
+
+  // LinkedIn
+  linkedInConnection = signal<LinkedInConnectionInfo | null>(null);
+  linkedInOrgs = signal<LinkedInOrganization[]>([]);
+  linkedInLoading = signal(false);
+  showOrgPicker = signal(false);
 
   agentMap = computed(() => {
     const map: Record<string, string> = {};
@@ -85,6 +92,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     private agentService: AgentService,
     private postService: PostService,
     private tovService: ToneOfVoiceService,
+    private linkedInService: LinkedInService,
     private route: ActivatedRoute,
     protected router: Router,
     protected navService: NavigationService
@@ -101,6 +109,22 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
+
+    // Handle LinkedIn OAuth callback redirect
+    this.route.queryParamMap.subscribe(qp => {
+      const orgsJson = qp.get('linkedin_orgs');
+      if (orgsJson) {
+        try {
+          const orgs = JSON.parse(orgsJson) as LinkedInOrganization[];
+          this.linkedInOrgs.set(orgs);
+          this.showOrgPicker.set(true);
+          this.navService.activeSection.set('integrations');
+          // Clean up query params
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        } catch { /* ignore parse errors */ }
+      }
+    });
+
     this.route.paramMap.subscribe(params => {
       this.wsId = params.get('wsId')!;
       this.loadAll();
@@ -119,18 +143,27 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   private updateRouteState() {
     const url = this.router.url.split('?')[0];
     const base = `/workspaces/${this.wsId}`;
+    const suffix = url.startsWith(base) ? url.slice(base.length).replace(/^\//, '') : '';
+    const firstSegment = suffix.split('/')[0];
     const wasChild = this.isChildRoute();
 
-    if (url === base || url === base + '/') {
+    const sections = ['agents', 'contents', 'tov', 'integrations'];
+
+    if (!suffix || sections.includes(suffix)) {
+      // Section route (e.g. /workspaces/:id/agents)
       this.isChildRoute.set(false);
       if (wasChild) {
         this.loadAll();
       }
+      if (sections.includes(firstSegment)) {
+        this.navService.activeSection.set(firstSegment as any);
+      }
     } else {
+      // Child route (e.g. /workspaces/:id/agents/new, /posts/:id)
       this.isChildRoute.set(true);
-      if (url.includes('/posts/')) {
+      if (firstSegment === 'posts') {
         this.navService.activeSection.set('contents');
-      } else if (url.includes('/agents/')) {
+      } else if (firstSegment === 'agents') {
         this.navService.activeSection.set('agents');
       }
     }
@@ -141,6 +174,45 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     this.agentService.list(this.wsId).subscribe(a => this.agents.set(a));
     this.loadPosts();
     this.loadTovs();
+    this.loadLinkedInConnection();
+  }
+
+  loadLinkedInConnection() {
+    this.linkedInService.getConnection(this.wsId).subscribe({
+      next: conn => this.linkedInConnection.set(conn),
+      error: () => {},
+    });
+  }
+
+  connectLinkedIn() {
+    this.linkedInLoading.set(true);
+    const redirectUri = `${window.location.origin}/linkedin/callback`;
+    this.linkedInService.getOAuthUrl(this.wsId, redirectUri).subscribe({
+      next: (result) => {
+        window.location.href = result.url;
+      },
+      error: () => this.linkedInLoading.set(false),
+    });
+  }
+
+  disconnectLinkedIn() {
+    if (!confirm('Disconnettere LinkedIn da questo workspace?')) return;
+    this.linkedInService.disconnect(this.wsId).subscribe({
+      next: () => this.linkedInConnection.set(null),
+    });
+  }
+
+  selectOrganization(org: LinkedInOrganization) {
+    this.linkedInLoading.set(true);
+    this.linkedInService.selectOrganization(this.wsId, org.id, org.name, org.logo_url || undefined).subscribe({
+      next: (conn) => {
+        this.linkedInConnection.set(conn);
+        this.showOrgPicker.set(false);
+        this.linkedInOrgs.set([]);
+        this.linkedInLoading.set(false);
+      },
+      error: () => this.linkedInLoading.set(false),
+    });
   }
 
   loadPosts() {

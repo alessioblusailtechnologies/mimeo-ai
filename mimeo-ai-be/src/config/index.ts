@@ -14,6 +14,11 @@ export interface Config {
   cors: {
     origin: string;
   };
+  linkedin: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+  } | null;
 }
 
 function requireEnv(name: string): string {
@@ -40,4 +45,9 @@ export const config: Config = {
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
   },
+  linkedin: process.env.LINKEDIN_CLIENT_ID ? {
+    clientId: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+    redirectUri: process.env.LINKEDIN_REDIRECT_URI || `${process.env.CORS_ORIGIN || 'http://localhost:4200'}/linkedin/callback`,
+  } : null,
 };

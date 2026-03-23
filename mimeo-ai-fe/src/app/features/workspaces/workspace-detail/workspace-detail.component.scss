@@ -593,6 +593,126 @@
   margin-top: auto;
 }
 
+/* INTEGRATIONS */
+.integrations-section {
+  padding: 0 24px;
+}
+
+.integration-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: 500px;
+}
+
+.integration-header {
+  margin-bottom: 16px;
+}
+
+.integration-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+
+  .li-logo { color: #0a66c2; }
+}
+
+.integration-desc {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.linkedin-connected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.linkedin-org-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.org-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.org-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.org-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.org-status {
+  font-size: 11px;
+  font-weight: 500;
+
+  &.valid { color: var(--green, #22c55e); }
+  &.expired { color: var(--red, #ef4444); }
+}
+
+.btn-disconnect {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red, #ef4444);
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: .15s;
+
+  &:hover { background: rgba(239, 68, 68, .15); }
+}
+
+.org-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+  transition: .15s;
+  margin-bottom: 8px;
+  text-align: left;
+
+  &:hover { border-color: var(--accent); background: var(--accent-bg); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.org-option-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }

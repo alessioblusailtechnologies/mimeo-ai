@@ -16,7 +16,11 @@
         }
         @if (post.status === 'approved') {
           <button class="btn-publish" (click)="publish()" [disabled]="actionLoading() === 'publish'">
-            {{ actionLoading() === 'publish' ? 'Publishing...' : 'Publish' }}
+            @if (linkedInConnection()) {
+              {{ actionLoading() === 'publish' ? 'Publishing to LinkedIn...' : 'Publish to LinkedIn' }}
+            } @else {
+              {{ actionLoading() === 'publish' ? 'Publishing...' : 'Publish' }}
+            }
           </button>
         }
         <button class="btn-copy" (click)="copyToClipboard()">

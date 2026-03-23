@@ -247,7 +247,71 @@
           </div>
         }
       }
+      <!-- ===== INTEGRATIONS TAB ===== -->
+      @if (navService.activeSection() === 'integrations') {
+        <div class="toolbar">
+          <div class="toolbar-l">
+            <h3 class="section-title">Integrations</h3>
+          </div>
+        </div>
+
+        <div class="integrations-section">
+          <div class="integration-card">
+            <div class="integration-header">
+              <div class="integration-title">
+                <svg class="li-logo" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <span>LinkedIn Company Page</span>
+              </div>
+            </div>
+
+            @if (linkedInConnection(); as conn) {
+              <div class="linkedin-connected">
+                <div class="linkedin-org-info">
+                  @if (conn.organization_logo_url) {
+                    <img [src]="conn.organization_logo_url" alt="" class="org-logo" />
+                  }
+                  <div class="org-details">
+                    <span class="org-name">{{ conn.organization_name }}</span>
+                    <span class="org-status" [class.valid]="conn.is_token_valid" [class.expired]="!conn.is_token_valid">
+                      {{ conn.is_token_valid ? 'Connesso' : 'Token Scaduto' }}
+                    </span>
+                  </div>
+                </div>
+                <button class="btn-disconnect" (click)="disconnectLinkedIn()">Disconnetti</button>
+              </div>
+            } @else {
+              <p class="integration-desc">Collega la tua LinkedIn Company Page per pubblicare i post direttamente.</p>
+              <button class="btn btn-primary" (click)="connectLinkedIn()" [disabled]="linkedInLoading()">
+                {{ linkedInLoading() ? 'Connessione...' : 'Connetti LinkedIn' }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
     }
+  </div>
+}
+
+<!-- Org picker modal -->
+@if (showOrgPicker() && linkedInOrgs().length > 0) {
+  <div class="overlay" (click)="showOrgPicker.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-h">
+        <h3>Seleziona Company Page</h3>
+      </div>
+      <div class="modal-b">
+        <p style="margin-bottom: 12px; color: var(--text-2); font-size: 13px;">Scegli la pagina LinkedIn su cui pubblicare:</p>
+        @for (org of linkedInOrgs(); track org.id) {
+          <button class="org-option" (click)="selectOrganization(org)" [disabled]="linkedInLoading()">
+            @if (org.logo_url) {
+              <img [src]="org.logo_url" alt="" class="org-option-logo" />
+            }
+            <span>{{ org.name }}</span>
+          </button>
+        }
+      </div>
+    </div>
   </div>
 }
 

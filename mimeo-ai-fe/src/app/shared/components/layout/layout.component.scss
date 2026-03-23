@@ -280,11 +280,14 @@
 .sidebar {
   width: 68px;
   min-width: 68px;
+  height: 100%;
   background: var(--bg-1);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .nav {
@@ -292,6 +295,15 @@
   flex-direction: column;
   padding: 12px 8px;
   gap: 4px;
+}
+
+.nav-bottom {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+  align-items: stretch;
 }
 
 .nav-item {

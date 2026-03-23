@@ -61,6 +61,25 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
   return parts.join('\n\n');
 }
 
+export function buildImagePrompt(
+  agentImagePrompt: string,
+  postContent: string,
+  brief: string,
+  userFeedback?: string
+): string {
+  const parts: string[] = [];
+
+  parts.push(agentImagePrompt);
+  parts.push(`\nThe image should be contextually relevant to the following post content:\n\n${postContent.slice(0, 1500)}`);
+  parts.push(`\nThe post topic is: ${brief.slice(0, 500)}`);
+
+  if (userFeedback) {
+    parts.push(`\nAdditional instructions for this image regeneration: ${userFeedback}`);
+  }
+
+  return parts.join('\n');
+}
+
 export function buildUserPrompt(brief: string, referenceContent?: string, platformType?: string, userFeedback?: string): string {
   const platformLabel = PLATFORM_LABELS[platformType || 'linkedin'] || PLATFORM_LABELS.linkedin;
   let prompt = `Write a ${platformLabel} post about the following topic/brief:\n\n${brief}`;

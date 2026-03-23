@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { PostService, Post, Generation } from '../../../core/services/post.service';
+import { PostService, Post, Generation, PostImage } from '../../../core/services/post.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
@@ -28,6 +28,17 @@ export class PostDetailComponent implements OnInit {
   activeVersionTab = signal(0);
   showFeedbackInput = signal(false);
   feedbackText = '';
+
+  // Image generation
+  postImages = signal<PostImage[]>([]);
+  showImageGen = signal(false);
+  imagePrompt = '';
+  imageCount = 1;
+  imageLoading = signal(false);
+  showImageFeedback = signal(false);
+  imageFeedbackText = '';
+
+  agentHasImageGen = computed(() => this.agent()?.image_generation_enabled === true);
 
   versionsCount = computed(() => this.agent()?.versions_count || 1);
 
@@ -69,6 +80,7 @@ export class PostDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.loadPost(id);
     this.postService.getGenerations(this.wsId, id).subscribe(gens => this.generations.set(gens));
+    this.postService.getImages(this.wsId, id).subscribe(imgs => this.postImages.set(imgs));
   }
 
   private loadPost(id: string) {
@@ -182,6 +194,58 @@ export class PostDetailComponent implements OnInit {
     navigator.clipboard.writeText(p.content).then(() => {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
+    });
+  }
+
+  toggleImageGen() {
+    this.showImageGen.update(v => !v);
+    if (!this.showImageGen()) {
+      this.imagePrompt = '';
+      this.imageCount = 1;
+    }
+  }
+
+  generateImages() {
+    const p = this.post();
+    if (!p || !this.imagePrompt.trim()) return;
+    this.imageLoading.set(true);
+    this.postService.generateImages(this.wsId, p.id, this.imagePrompt.trim(), this.imageCount).subscribe({
+      next: images => {
+        this.postImages.update(existing => [...images, ...existing]);
+        this.imageLoading.set(false);
+        this.imagePrompt = '';
+        this.showImageGen.set(false);
+      },
+      error: () => this.imageLoading.set(false),
+    });
+  }
+
+  toggleImageFeedback() {
+    this.showImageFeedback.update(v => !v);
+    if (!this.showImageFeedback()) this.imageFeedbackText = '';
+  }
+
+  regenerateImages() {
+    const p = this.post();
+    if (!p) return;
+    this.imageLoading.set(true);
+    const feedback = this.imageFeedbackText.trim() || undefined;
+    this.postService.regenerateImages(this.wsId, p.id, feedback).subscribe({
+      next: images => {
+        this.postImages.update(existing => [...images, ...existing]);
+        this.imageLoading.set(false);
+        this.imageFeedbackText = '';
+        this.showImageFeedback.set(false);
+      },
+      error: () => this.imageLoading.set(false),
+    });
+  }
+
+  deleteImage(img: PostImage) {
+    const p = this.post();
+    if (!p) return;
+    this.postService.deleteImage(this.wsId, p.id, img.id).subscribe({
+      next: () => this.postImages.update(imgs => imgs.filter(i => i.id !== img.id)),
     });
   }
 

@@ -3,8 +3,9 @@ import * as postRepo from '../repositories/post.repository.js';
 import * as generationRepo from '../repositories/generation.repository.js';
 import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
+import * as postImageService from './post-image.service.js';
 import { ManualCopyPublisher } from './publishing/manual-copy.publisher.js';
-import { buildSystemPrompt, buildUserPrompt } from '../utils/prompt-builder.js';
+import { buildSystemPrompt, buildUserPrompt, buildImagePrompt } from '../utils/prompt-builder.js';
 import { extractUrls, scrapeUrls, formatScrapedForPrompt, webSearch, formatSearchResultsForPrompt } from '../utils/scraper.js';
 import { BadRequestError, NotFoundError } from '../utils/api-error.js';
 import type { Post, PostStatus, GenerateDraftDto, UpdatePostDto } from '../types/post.types.js';
@@ -119,6 +120,13 @@ export async function generateDraft(
     )
   );
 
+  // Auto-generate images if agent has image generation enabled
+  if (agent.image_generation_enabled && agent.image_prompt) {
+    const imagePrompt = buildImagePrompt(agent.image_prompt, aiResponses[0].content, dto.brief);
+    postImageService.generateImages(post.id, userId, imagePrompt, agent.image_count || 1)
+      .catch(err => console.error('Auto image generation failed:', err));
+  }
+
   return { post, generations };
 }
 
@@ -158,6 +166,13 @@ export async function regenerate(
     generation_time_ms: aiResponse.generationTimeMs,
     is_selected: false,
   });
+
+  // Auto-generate images if agent has image generation enabled
+  if (agent.image_generation_enabled && agent.image_prompt) {
+    const imagePrompt = buildImagePrompt(agent.image_prompt, aiResponse.content, post.original_brief);
+    postImageService.generateImages(post.id, userId, imagePrompt, agent.image_count || 1)
+      .catch(err => console.error('Auto image regeneration failed:', err));
+  }
 
   return { post, generation };
 }

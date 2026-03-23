@@ -32,6 +32,16 @@ export interface Generation {
   created_at: string;
 }
 
+export interface PostImage {
+  id: string;
+  post_id: string;
+  prompt: string;
+  public_url: string;
+  ai_model: string;
+  generation_time_ms: number | null;
+  created_at: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -91,6 +101,32 @@ export class PostService {
   selectGeneration(wsId: string, postId: string, generationId: string) {
     return this.http.post<ApiResponse<Post>>(
       `${this.url(wsId)}/${postId}/generations/${generationId}/select`, {}
+    ).pipe(map(r => r.data));
+  }
+
+  regenerateImages(wsId: string, postId: string, imageFeedback?: string) {
+    const body: Record<string, unknown> = {};
+    if (imageFeedback) body['image_feedback'] = imageFeedback;
+    return this.http.post<ApiResponse<PostImage[]>>(
+      `${this.url(wsId)}/${postId}/images/regenerate`, body
+    ).pipe(map(r => r.data));
+  }
+
+  generateImages(wsId: string, postId: string, prompt: string, count: number = 1) {
+    return this.http.post<ApiResponse<PostImage[]>>(
+      `${this.url(wsId)}/${postId}/images/generate`, { prompt, count }
+    ).pipe(map(r => r.data));
+  }
+
+  getImages(wsId: string, postId: string) {
+    return this.http.get<ApiResponse<PostImage[]>>(
+      `${this.url(wsId)}/${postId}/images`
+    ).pipe(map(r => r.data));
+  }
+
+  deleteImage(wsId: string, postId: string, imageId: string) {
+    return this.http.delete<ApiResponse<{ deleted: boolean }>>(
+      `${this.url(wsId)}/${postId}/images/${imageId}`
     ).pipe(map(r => r.data));
   }
 }

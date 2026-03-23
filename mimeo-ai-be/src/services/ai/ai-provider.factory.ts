@@ -1,6 +1,6 @@
 import { config } from '../../config/index.js';
 import { BadRequestError } from '../../utils/api-error.js';
-import type { AiProvider } from './ai-provider.interface.js';
+import type { AiProvider, AiImageProvider } from './ai-provider.interface.js';
 import { ClaudeProvider } from './claude.provider.js';
 import { OpenAIProvider } from './openai.provider.js';
 
@@ -13,4 +13,8 @@ export function getAiProvider(provider: 'claude' | 'openai'): AiProvider {
     default:
       throw new BadRequestError(`Unsupported AI provider: ${provider}`);
   }
+}
+
+export function getImageProvider(): AiImageProvider {
+  return new OpenAIProvider(config.ai.openaiApiKey);
 }

@@ -152,6 +152,71 @@
       }
     </div>
 
+    <!-- Images Section -->
+    <div class="images-section">
+      <div class="images-header">
+        <span class="section-label">Immagini</span>
+        <div class="images-header-actions">
+          @if (agentHasImageGen() && post.status === 'draft') {
+            <button class="btn-edit" (click)="toggleImageFeedback()">
+              {{ showImageFeedback() ? 'Annulla' : 'Rigenera immagini' }}
+            </button>
+          }
+          <button class="btn-edit" (click)="toggleImageGen()">
+            {{ showImageGen() ? 'Annulla' : '+ Genera manualmente' }}
+          </button>
+        </div>
+      </div>
+
+      @if (showImageFeedback()) {
+        <div class="image-gen-bar">
+          <input type="text" class="feedback-input"
+                 [(ngModel)]="imageFeedbackText"
+                 placeholder="Es: rendila più luminosa, aggiungi persone, stile minimalista..."
+                 (keydown.enter)="regenerateImages()" />
+          <button class="btn-regenerate" (click)="regenerateImages()" [disabled]="imageLoading()">
+            {{ imageLoading() ? 'Generando...' : 'Rigenera' }}
+          </button>
+        </div>
+      }
+
+      @if (showImageGen()) {
+        <div class="image-gen-bar">
+          <div class="image-gen-fields">
+            <input type="text" class="feedback-input"
+                   [(ngModel)]="imagePrompt"
+                   placeholder="Descrivi l'immagine da generare..."
+                   (keydown.enter)="generateImages()" />
+            <select class="image-count-select" [(ngModel)]="imageCount">
+              <option [value]="1">1 immagine</option>
+              <option [value]="2">2 immagini</option>
+              <option [value]="3">3 immagini</option>
+              <option [value]="4">4 immagini</option>
+            </select>
+          </div>
+          <button class="btn-regenerate" (click)="generateImages()" [disabled]="imageLoading() || !imagePrompt.trim()">
+            {{ imageLoading() ? 'Generando...' : 'Genera' }}
+          </button>
+        </div>
+      }
+
+      @if (postImages().length > 0) {
+        <div class="images-grid">
+          @for (img of postImages(); track img.id) {
+            <div class="image-card">
+              <img [src]="img.public_url" [alt]="img.prompt" loading="lazy" />
+              <div class="image-card-overlay">
+                <span class="image-prompt-text">{{ img.prompt }}</span>
+                <button class="btn-delete-img" (click)="deleteImage(img)">Elimina</button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (!showImageGen() && !showImageFeedback()) {
+        <p class="empty-images">Nessuna immagine generata</p>
+      }
+    </div>
+
     <!-- Generation History (regenerations only, after initial batch) -->
     @if (historyGenerations().length > 0) {
       <div class="generations-section">

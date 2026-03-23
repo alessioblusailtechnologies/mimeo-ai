@@ -21,6 +21,9 @@ export const createAgentSchema = z.object({
   schedule_cron: z.string().max(100).optional(),
   schedule_brief: z.string().max(5000).optional(),
   sources: z.array(agentSourceSchema).max(20).optional(),
+  image_generation_enabled: z.boolean().optional().default(false),
+  image_prompt: z.string().max(2000).optional(),
+  image_count: z.number().int().min(1).max(4).optional().default(1),
 });
 
 export const updateAgentSchema = createAgentSchema.partial();

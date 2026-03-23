@@ -38,16 +38,20 @@ export class AgentFormComponent implements OnInit {
   error = signal('');
 
   // Form
-  form: CreateAgentDto = {
+  form: CreateAgentDto & { image_generation_enabled?: boolean; image_prompt?: string; image_count?: number } = {
     name: '',
     tone: 'professional',
     ai_provider: 'claude',
     ai_model: 'claude-opus-4-6',
     platform_type: 'linkedin',
     versions_count: 1,
+    image_generation_enabled: false,
+    image_prompt: '',
+    image_count: 1,
   };
 
   readonly versionOptions = [1, 2, 3];
+  readonly imageCountOptions = [1, 2, 3, 4];
 
   scheduleBrief = '';
 
@@ -112,6 +116,9 @@ export class AgentFormComponent implements OnInit {
           ai_model: agent.ai_model,
           platform_type: agent.platform_type || 'linkedin',
           versions_count: agent.versions_count || 1,
+          image_generation_enabled: agent.image_generation_enabled || false,
+          image_prompt: agent.image_prompt || '',
+          image_count: agent.image_count || 1,
         };
         this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';
@@ -180,6 +187,7 @@ export class AgentFormComponent implements OnInit {
       tone_of_voice_id: this.selectedTovId || undefined,
       schedule_brief: this.scheduleBrief || undefined,
       sources: currentSources.length > 0 ? currentSources : undefined,
+      image_prompt: (this.form.image_prompt as string)?.trim() || undefined,
     };
 
     const req = this.isEdit && this.agentId

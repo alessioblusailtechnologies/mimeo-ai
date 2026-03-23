@@ -28,6 +28,9 @@ export interface Agent {
   schedule_cron: string | null;
   schedule_brief: string | null;
   sources: AgentSource[];
+  image_generation_enabled: boolean;
+  image_prompt: string | null;
+  image_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +50,9 @@ export interface CreateAgentDto {
   schedule_cron?: string;
   schedule_brief?: string;
   sources?: AgentSource[];
+  image_generation_enabled?: boolean;
+  image_prompt?: string;
+  image_count?: number;
 }
 
 export interface UpdateAgentDto {
@@ -65,4 +71,7 @@ export interface UpdateAgentDto {
   schedule_cron?: string;
   schedule_brief?: string;
   sources?: AgentSource[];
+  image_generation_enabled?: boolean;
+  image_prompt?: string;
+  image_count?: number;
 }

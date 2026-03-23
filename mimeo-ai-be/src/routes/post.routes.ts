@@ -17,5 +17,9 @@ router.post('/:id/approve', postController.approve);
 router.post('/:id/publish', postController.publish);
 router.get('/:id/generations', postController.getGenerations);
 router.post('/:id/generations/:genId/select', postController.selectGeneration);
+router.post('/:id/images/regenerate', postController.regenerateImages);
+router.post('/:id/images/generate', postController.generateImages);
+router.get('/:id/images', postController.getImages);
+router.delete('/:id/images/:imgId', postController.deleteImage);
 
 export default router;

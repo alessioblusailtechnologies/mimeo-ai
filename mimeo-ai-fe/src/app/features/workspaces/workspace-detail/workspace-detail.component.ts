@@ -23,6 +23,7 @@ import {
   Delete01Icon,
   PlusSignIcon,
   VoiceIcon,
+  Copy01Icon,
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -83,6 +84,7 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     delete: Delete01Icon,
     plus: PlusSignIcon,
     voice: VoiceIcon,
+    copy: Copy01Icon,
   };
 
   private routerSub!: Subscription;
@@ -227,6 +229,12 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
   filterBy(status: PostStatus | 'all') {
     this.activeFilter.set(status);
     this.loadPosts();
+  }
+
+  duplicateAgent(id: string) {
+    this.agentService.duplicate(this.wsId, id).subscribe(() => {
+      this.agentService.list(this.wsId).subscribe(a => this.agents.set(a));
+    });
   }
 
   deleteAgent(id: string) {

@@ -31,6 +31,13 @@ export async function update(req: Request<{ wsId: string; id: string }>, res: Re
   } catch (err) { next(err); }
 }
 
+export async function duplicate(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const agent = await agentService.duplicateAgent(req.params.id, req.params.wsId, req.user!.id);
+    sendCreated(res, agent);
+  } catch (err) { next(err); }
+}
+
 export async function remove(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
   try {
     await agentService.deleteAgent(req.params.id, req.user!.id);

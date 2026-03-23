@@ -15,7 +15,7 @@ export const createAgentSchema = z.object({
   custom_system_prompt: z.string().max(5000).optional(),
   ai_provider: z.enum(['claude', 'openai']),
   ai_model: z.string().min(1).max(100),
-  platform_type: z.enum(['linkedin', 'twitter', 'blog', 'generic']).optional().default('linkedin'),
+  platform_type: z.enum(['linkedin', 'blog', 'generic']).optional().default('linkedin'),
   versions_count: z.number().int().min(1).max(3).optional().default(1),
   schedule_enabled: z.boolean().optional(),
   schedule_cron: z.string().max(100).optional(),

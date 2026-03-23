@@ -3,7 +3,6 @@ import type { ToneOfVoice } from '../types/tone-of-voice.types.js';
 
 const PLATFORM_LABELS: Record<string, string> = {
   linkedin: 'LinkedIn',
-  twitter: 'Twitter/X',
   blog: 'Blog',
   generic: 'social media',
 };
@@ -40,10 +39,16 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
   }
 
   const platformInstructions: Record<string, string> = {
-    linkedin: 'Generate a LinkedIn post. Use appropriate formatting (line breaks, emojis if fitting the tone). Keep it engaging and within LinkedIn best practices for length (1300 characters optimal, 3000 max).',
-    twitter: 'Generate a Twitter/X post. Keep it concise and impactful (280 characters max per tweet). If the content requires more space, structure it as a thread with numbered tweets.',
-    blog: 'Generate a blog post. Use headings, subheadings, and paragraphs for readability. Aim for 500-1500 words depending on the topic depth.',
-    generic: 'Generate a social media post. Use appropriate formatting for the platform. Keep it engaging and well-structured.',
+    linkedin: 'Generate a LinkedIn post. Keep it engaging and within LinkedIn best practices for length (1300 characters optimal, 3000 max).\n' +
+      'FORMATTING RULES FOR LINKEDIN:\n' +
+      '- Use short paragraphs separated by blank lines for readability.\n' +
+      '- For lists, use "•" (bullet point) or numbered lists ("1.", "2.") — NEVER use "–" or "—" as list markers.\n' +
+      '- Do NOT use markdown syntax (no #, **, _, ```, etc.) — LinkedIn does not render markdown.\n' +
+      '- Use line breaks generously to create visual breathing room.\n' +
+      '- Emojis are allowed if they fit the tone, but use them sparingly.\n' +
+      '- Do NOT use horizontal rules, dividers, or separator lines.',
+    blog: 'Generate a blog post. Use markdown formatting: headings (##, ###), bold (**text**), bullet lists (- item), and paragraphs for readability. Aim for 500-1500 words depending on the topic depth.',
+    generic: 'Generate a social media post. Use appropriate formatting for the platform. Keep it engaging and well-structured. For lists use "•" bullet points, not dashes.',
   };
 
   parts.push(platformInstructions[agent.platform_type] || platformInstructions.linkedin);
@@ -55,7 +60,7 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
     '- NEVER include disclaimers, apologies, or meta-commentary about your capabilities.\n' +
     '- If reference material is provided below, use it as your primary source of facts and data.\n' +
     '- If no reference material is provided, write confidently based on your knowledge. Present information as facts, not as "based on my training data".\n' +
-    '- Your output must ONLY be the LinkedIn post content — nothing else. No preamble, no explanation, no "here is the post".'
+    '- Your output must ONLY be the post content — nothing else. No preamble, no explanation, no "here is the post".'
   );
 
   return parts.join('\n\n');

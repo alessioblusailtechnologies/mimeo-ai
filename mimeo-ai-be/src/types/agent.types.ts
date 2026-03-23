@@ -1,7 +1,7 @@
 export type AgentTone = 'professional' | 'creative' | 'technical' | 'casual' | 'inspirational' | 'educational';
 export type AiProvider = 'claude' | 'openai';
 export type AgentSourceType = 'url' | 'file';
-export type PlatformType = 'linkedin' | 'twitter' | 'blog' | 'generic';
+export type PlatformType = 'linkedin' | 'blog' | 'generic';
 
 export interface AgentSource {
   type: AgentSourceType;

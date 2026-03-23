@@ -37,6 +37,29 @@ export async function updateAgent(agentId: string, dto: UpdateAgentDto, userId: 
   return agentRepo.update(agentId, dto, userId);
 }
 
+export async function duplicateAgent(agentId: string, workspaceId: string, userId: string): Promise<Agent> {
+  const source = await agentRepo.findById(agentId, userId);
+  const dto: CreateAgentDto = {
+    name: `${source.name} (copia)`,
+    tone: source.tone,
+    tone_of_voice_id: source.tone_of_voice_id,
+    target_audience: source.target_audience || undefined,
+    writing_style_guidelines: source.writing_style_guidelines || undefined,
+    custom_system_prompt: source.custom_system_prompt || undefined,
+    ai_provider: source.ai_provider,
+    ai_model: source.ai_model,
+    platform_type: source.platform_type,
+    versions_count: source.versions_count,
+    schedule_brief: source.schedule_brief || undefined,
+    sources: source.sources?.length ? source.sources : undefined,
+    image_generation_enabled: source.image_generation_enabled,
+    image_prompt: source.image_prompt || undefined,
+    image_count: source.image_count,
+    image_reference_url: source.image_reference_url,
+  };
+  return agentRepo.create(workspaceId, dto, userId);
+}
+
 export async function deleteAgent(agentId: string, userId: string): Promise<void> {
   return agentRepo.remove(agentId, userId);
 }

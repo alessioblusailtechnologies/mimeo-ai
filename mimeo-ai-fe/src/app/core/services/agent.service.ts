@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 import { map } from 'rxjs';
 
 export type AgentSourceType = 'url' | 'file';
-export type PlatformType = 'linkedin' | 'twitter' | 'blog' | 'generic';
+export type PlatformType = 'linkedin' | 'blog' | 'generic';
 
 export interface AgentSource {
   type: AgentSourceType;
@@ -87,6 +87,10 @@ export class AgentService {
 
   update(wsId: string, id: string, dto: Partial<CreateAgentDto>) {
     return this.http.patch<ApiResponse<Agent>>(`${this.url(wsId)}/${id}`, dto).pipe(map(r => r.data));
+  }
+
+  duplicate(wsId: string, id: string) {
+    return this.http.post<ApiResponse<Agent>>(`${this.url(wsId)}/${id}/duplicate`, {}).pipe(map(r => r.data));
   }
 
   delete(wsId: string, id: string) {

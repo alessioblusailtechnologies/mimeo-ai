@@ -62,6 +62,7 @@
                       @if (triggerLoading() === agent.id) { <span class="spinner-sm"></span> } @else { <app-icon [icon]="icons.play" [size]="14" /> }
                     </button>
                     <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Modifica"><app-icon [icon]="icons.edit" [size]="14" /></a>
+                    <button (click)="duplicateAgent(agent.id)" title="Duplica"><app-icon [icon]="icons.copy" [size]="14" /></button>
                     <button class="del" (click)="deleteAgent(agent.id)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
                   </span>
                 </div>
@@ -100,6 +101,7 @@
                         }
                       </button>
                       <a [routerLink]="['/workspaces', wsId, 'agents', agent.id, 'edit']" title="Edit"><app-icon [icon]="icons.edit" [size]="14" /> Modifica</a>
+                      <button (click)="duplicateAgent(agent.id)" title="Duplica"><app-icon [icon]="icons.copy" [size]="14" /> Duplica</button>
                     </div>
                     <button class="ac-del" (click)="deleteAgent(agent.id)" title="Elimina"><app-icon [icon]="icons.delete" [size]="14" /></button>
                   </div>
@@ -264,27 +266,11 @@
               </div>
             </div>
 
-            @if (linkedInConnection(); as conn) {
-              <div class="linkedin-connected">
-                <div class="linkedin-org-info">
-                  @if (conn.organization_logo_url) {
-                    <img [src]="conn.organization_logo_url" alt="" class="org-logo" />
-                  }
-                  <div class="org-details">
-                    <span class="org-name">{{ conn.organization_name }}</span>
-                    <span class="org-status" [class.valid]="conn.is_token_valid" [class.expired]="!conn.is_token_valid">
-                      {{ conn.is_token_valid ? 'Connesso' : 'Token Scaduto' }}
-                    </span>
-                  </div>
-                </div>
-                <button class="btn-disconnect" (click)="disconnectLinkedIn()">Disconnetti</button>
-              </div>
-            } @else {
+            <div class="integration-pending">
               <p class="integration-desc">Collega la tua LinkedIn Company Page per pubblicare i post direttamente.</p>
-              <button class="btn btn-primary" (click)="connectLinkedIn()" [disabled]="linkedInLoading()">
-                {{ linkedInLoading() ? 'Connessione...' : 'Connetti LinkedIn' }}
-              </button>
-            }
+              <button class="btn btn-primary" disabled>Connetti LinkedIn</button>
+              <p class="integration-review-notice">In attesa di approvazione da parte di LinkedIn. La funzionalità sarà disponibile a breve.</p>
+            </div>
           </div>
         </div>
       }

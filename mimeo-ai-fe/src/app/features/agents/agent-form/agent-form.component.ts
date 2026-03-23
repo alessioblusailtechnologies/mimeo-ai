@@ -14,7 +14,6 @@ import {
   Delete01Icon,
   PlusSignIcon,
   Linkedin01Icon,
-  TwitterIcon,
   BloggerIcon,
   Globe02Icon,
 } from '@hugeicons/core-free-icons';
@@ -64,7 +63,6 @@ export class AgentFormComponent implements OnInit {
 
   readonly platforms = [
     { id: 'linkedin' as PlatformType, name: 'LinkedIn', icon: Linkedin01Icon },
-    { id: 'twitter' as PlatformType, name: 'Twitter / X', icon: TwitterIcon },
     { id: 'blog' as PlatformType, name: 'Blog', icon: BloggerIcon },
     { id: 'generic' as PlatformType, name: 'Generico', icon: Globe02Icon },
   ];

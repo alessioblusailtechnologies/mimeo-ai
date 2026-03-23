@@ -216,6 +216,13 @@
             </div>
           }
         </div>
+      } @else if (post.image_status === 'generating') {
+        <div class="image-generating-bar">
+          <span class="image-spinner"></span>
+          <span>Generazione immagini in corso...</span>
+        </div>
+      } @else if (post.image_status === 'failed') {
+        <p class="empty-images">Generazione immagini fallita</p>
       } @else if (!showImageGen() && !showImageFeedback()) {
         <p class="empty-images">Nessuna immagine generata</p>
       }

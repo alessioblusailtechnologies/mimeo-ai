@@ -1,4 +1,5 @@
 export type PostStatus = 'draft' | 'approved' | 'published';
+export type ImageStatus = 'generating' | 'completed' | 'failed';
 
 export interface Post {
   id: string;
@@ -9,6 +10,7 @@ export interface Post {
   content: string;
   original_brief: string;
   status: PostStatus;
+  image_status: ImageStatus | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;

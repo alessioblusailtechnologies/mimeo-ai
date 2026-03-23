@@ -132,8 +132,14 @@ export async function generateDraft(
   // Auto-generate images if agent has image generation enabled
   if (agent.image_generation_enabled && agent.image_prompt) {
     const imagePrompt = buildImagePrompt(agent.image_prompt, aiResponses[0].content, dto.brief);
+    await postRepo.updateImageStatus(post.id, 'generating', userId);
+    post.image_status = 'generating';
     postImageService.generateImages(post.id, userId, imagePrompt, agent.image_count || 1)
-      .catch(err => console.error('Auto image generation failed:', err));
+      .then(() => postRepo.updateImageStatus(post.id, 'completed', userId))
+      .catch(async (err) => {
+        console.error('Auto image generation failed:', err);
+        await postRepo.updateImageStatus(post.id, 'failed', userId);
+      });
   }
 
   return { post, generations };
@@ -179,8 +185,13 @@ export async function regenerate(
   // Auto-generate images if agent has image generation enabled
   if (agent.image_generation_enabled && agent.image_prompt) {
     const imagePrompt = buildImagePrompt(agent.image_prompt, aiResponse.content, post.original_brief);
+    await postRepo.updateImageStatus(post.id, 'generating', userId);
     postImageService.generateImages(post.id, userId, imagePrompt, agent.image_count || 1)
-      .catch(err => console.error('Auto image regeneration failed:', err));
+      .then(() => postRepo.updateImageStatus(post.id, 'completed', userId))
+      .catch(async (err) => {
+        console.error('Auto image regeneration failed:', err);
+        await postRepo.updateImageStatus(post.id, 'failed', userId);
+      });
   }
 
   return { post, generation };

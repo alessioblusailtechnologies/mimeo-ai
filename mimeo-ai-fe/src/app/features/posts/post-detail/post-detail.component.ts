@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { Subscription, interval, switchMap, forkJoin } from 'rxjs';
 import { PostService, Post, Generation, PostImage } from '../../../core/services/post.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { LinkedInService, LinkedInConnectionInfo } from '../../../core/services/linkedin.service';
@@ -15,7 +16,7 @@ import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
   templateUrl: './post-detail.component.html',
   styleUrl: './post-detail.component.scss'
 })
-export class PostDetailComponent implements OnInit {
+export class PostDetailComponent implements OnInit, OnDestroy {
   post = signal<Post | null>(null);
   agent = signal<Agent | null>(null);
   generations = signal<Generation[]>([]);
@@ -38,6 +39,7 @@ export class PostDetailComponent implements OnInit {
   imageLoading = signal(false);
   showImageFeedback = signal(false);
   imageFeedbackText = '';
+  private imagePolling$?: Subscription;
 
   agentHasImageGen = computed(() => this.agent()?.image_generation_enabled === true);
 
@@ -83,6 +85,7 @@ export class PostDetailComponent implements OnInit {
   ngOnInit() {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
     const id = this.route.snapshot.paramMap.get('id')!;
+
     this.loadPost(id);
     this.postService.getGenerations(this.wsId, id).subscribe(gens => this.generations.set(gens));
     this.postService.getImages(this.wsId, id).subscribe(imgs => this.postImages.set(imgs));
@@ -97,6 +100,10 @@ export class PostDetailComponent implements OnInit {
       this.post.set(post);
       this.editContent = post.content;
       this.editTitle = post.title || '';
+      // Start polling if images are being generated
+      if (post.image_status === 'generating' && !this.imagePolling$) {
+        this.startImagePolling(id);
+      }
       // Load agent to know versions_count
       if (post.agent_id) {
         this.agentService.getById(this.wsId, post.agent_id).subscribe({
@@ -256,6 +263,32 @@ export class PostDetailComponent implements OnInit {
     this.postService.deleteImage(this.wsId, p.id, img.id).subscribe({
       next: () => this.postImages.update(imgs => imgs.filter(i => i.id !== img.id)),
     });
+  }
+
+  private startImagePolling(postId: string) {
+    this.imagePolling$ = interval(3000).pipe(
+      switchMap(() => this.postService.getById(this.wsId, postId))
+    ).subscribe({
+      next: post => {
+        this.post.set(post);
+        if (post.image_status !== 'generating') {
+          // Image generation done (completed or failed) — fetch images and stop polling
+          this.imagePolling$?.unsubscribe();
+          this.imagePolling$ = undefined;
+          if (post.image_status === 'completed') {
+            this.postService.getImages(this.wsId, postId).subscribe(imgs => this.postImages.set(imgs));
+          }
+        }
+      },
+      error: () => {
+        this.imagePolling$?.unsubscribe();
+        this.imagePolling$ = undefined;
+      },
+    });
+  }
+
+  ngOnDestroy() {
+    this.imagePolling$?.unsubscribe();
   }
 
   goBack() {

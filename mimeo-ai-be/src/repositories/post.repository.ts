@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import { NotFoundError } from '../utils/api-error.js';
-import type { Post, PostStatus } from '../types/post.types.js';
+import type { Post, PostStatus, ImageStatus } from '../types/post.types.js';
 
 export async function findAllByWorkspaceId(
   workspaceId: string,
@@ -68,6 +68,18 @@ export async function update(
 
   if (error || !data) throw new NotFoundError('Post not found');
   return data as Post;
+}
+
+export async function updateImageStatus(
+  id: string,
+  imageStatus: ImageStatus | null,
+  userId: string
+): Promise<void> {
+  await supabaseAdmin
+    .from('mimeo_posts')
+    .update({ image_status: imageStatus })
+    .eq('id', id)
+    .eq('user_id', userId);
 }
 
 export async function updateStatus(

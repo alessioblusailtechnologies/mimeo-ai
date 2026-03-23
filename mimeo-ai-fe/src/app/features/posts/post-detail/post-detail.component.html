@@ -1,10 +1,14 @@
 @if (post(); as post) {
   <div class="page">
+    <div class="breadcrumb">
+      <a [routerLink]="['/workspaces', wsId, 'contents']">{{ workspaceName() }}</a>
+      <span class="sep">/</span>
+      <a [routerLink]="['/workspaces', wsId, 'contents']">Contents</a>
+      <span class="sep">/</span>
+      <span class="current">{{ post.title || 'Post' }}</span>
+    </div>
+
     <div class="page-header">
-      <div class="page-header-l">
-        <button class="btn-back" (click)="goBack()"><app-icon [icon]="icons.arrowLeft" [size]="16" /> Back to Contents</button>
-        <h2>{{ post.title || 'Post' }}</h2>
-      </div>
       <div class="header-actions">
         @if (post.status === 'draft') {
           <button class="btn-secondary" (click)="toggleFeedback()" [disabled]="actionLoading() === 'regenerate'">

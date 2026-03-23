@@ -71,6 +71,13 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
     return map;
   });
 
+  readonly sectionLabels: Record<string, string> = {
+    agents: 'Agents',
+    contents: 'Contents',
+    tov: 'Tone of Voice',
+    integrations: 'Integrations',
+  };
+
   // Icons
   readonly icons = {
     agents: ArtificialIntelligence01Icon,

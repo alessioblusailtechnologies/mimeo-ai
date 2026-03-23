@@ -1,7 +1,10 @@
 <div class="page">
-  <div class="page-header">
-    <button class="btn-back" (click)="goBack()"><app-icon [icon]="icons.arrowLeft" [size]="16" /> Indietro</button>
-    <h2>{{ isEdit ? 'Modifica Agent' : 'Nuovo Agent' }}</h2>
+  <div class="breadcrumb">
+    <a [routerLink]="['/workspaces', wsId, 'agents']">{{ workspaceName() }}</a>
+    <span class="sep">/</span>
+    <a [routerLink]="['/workspaces', wsId, 'agents']">Agents</a>
+    <span class="sep">/</span>
+    <span class="current">{{ isEdit ? form.name : 'Nuovo Agent' }}</span>
   </div>
 
   @if (error()) {

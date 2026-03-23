@@ -8,27 +8,8 @@
   animation: fadeIn .3s ease both;
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 24px;
-  flex-shrink: 0;
-
-  h2 { font-size: 17px; font-weight: 700; margin: 0; }
-}
-
-.btn-back {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-3);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 5px 10px;
-  font-family: inherit;
-  transition: .15s;
-  &:hover { color: var(--text-1); border-color: var(--border-h); }
+.breadcrumb {
+  padding: 16px 24px 0;
 }
 
 .error-banner {

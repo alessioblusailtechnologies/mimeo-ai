@@ -66,6 +66,14 @@
   padding: 0;
 }
 
+.breadcrumb {
+  margin: 0;
+}
+
+.toolbar .breadcrumb {
+  margin-bottom: 0;
+}
+
 /* SECTION TITLE */
 .section-title {
   font-size: 15px;
@@ -278,24 +286,49 @@
 
 /* AGENTS — TABLE VIEW */
 .agents-table {
-  padding: 0 24px 20px;
+  margin: 0 24px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.agents-header, .agents-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 100px 100px 150px 130px 130px;
+  gap: 0 12px;
+  align-items: center;
 }
 
 .agents-header {
-  grid-template-columns: 1fr 100px 160px 140px auto;
+  background: var(--table-header-bg);
+  padding: 10px 16px;
+
+  span {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--table-header-text);
+  }
+
+  span:last-child { text-align: right; }
 }
 
 .agents-row {
-  grid-template-columns: 1fr 100px 160px 140px auto;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--accent-bg); }
 }
 
 .td-agent-name {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-1);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .td-provider {
@@ -306,19 +339,23 @@
 .td-model {
   font-size: 11px;
   color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .td-tone {
   font-size: 12px;
   color: var(--text-2);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .td-actions {
   display: flex;
   gap: 4px;
+  justify-content: flex-end;
 
   button, a {
     background: none;
@@ -332,6 +369,7 @@
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
 
     &:hover { color: var(--text-1); background: var(--bg-3); border-color: var(--border); }
   }
@@ -343,22 +381,26 @@
 
 /* POSTS — TABLE VIEW */
 .posts-table {
-  padding: 0 24px 20px;
+  margin: 0 24px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .table-header {
   display: grid;
   grid-template-columns: 1fr 140px 110px 120px 100px;
   gap: 12px;
-  padding: 8px 16px;
-  border-bottom: 2px solid var(--border);
+  padding: 10px 16px;
+  background: var(--table-header-bg);
 
   span {
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--text-3);
+    color: var(--table-header-text);
   }
 }
 
@@ -373,7 +415,8 @@
   color: inherit;
   transition: background .15s;
 
-  &:hover { background: var(--bg-2); }
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--accent-bg); }
 }
 
 .td-content {

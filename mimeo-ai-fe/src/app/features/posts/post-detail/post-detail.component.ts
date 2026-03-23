@@ -1,18 +1,17 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Subscription, interval, switchMap, forkJoin } from 'rxjs';
 import { PostService, Post, Generation, PostImage } from '../../../core/services/post.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { LinkedInService, LinkedInConnectionInfo } from '../../../core/services/linkedin.service';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
-import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-post-detail',
-  imports: [FormsModule, DatePipe, IconComponent, MarkdownPipe],
+  imports: [FormsModule, DatePipe, RouterLink, MarkdownPipe],
   templateUrl: './post-detail.component.html',
   styleUrl: './post-detail.component.scss'
 })
@@ -44,6 +43,8 @@ export class PostDetailComponent implements OnInit, OnDestroy {
 
   agentHasImageGen = computed(() => this.agent()?.image_generation_enabled === true);
 
+  workspaceName = signal('');
+
   // LinkedIn
   linkedInConnection = signal<LinkedInConnectionInfo | null>(null);
 
@@ -71,13 +72,11 @@ export class PostDetailComponent implements OnInit, OnDestroy {
 
   hasMultipleVersions = computed(() => this.initialVersions().length > 1);
 
-  readonly icons = {
-    arrowLeft: ArrowLeft01Icon,
-  };
 
   constructor(
     private postService: PostService,
     private agentService: AgentService,
+    private workspaceService: WorkspaceService,
     private linkedInService: LinkedInService,
     private route: ActivatedRoute,
     protected router: Router
@@ -87,6 +86,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
     const id = this.route.snapshot.paramMap.get('id')!;
 
+    this.workspaceService.getById(this.wsId).subscribe(ws => this.workspaceName.set(ws.name));
     this.loadPost(id);
     this.postService.getGenerations(this.wsId, id).subscribe(gens => this.generations.set(gens));
     this.postService.getImages(this.wsId, id).subscribe(imgs => this.postImages.set(imgs));

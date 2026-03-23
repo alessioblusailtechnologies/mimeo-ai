@@ -1,11 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AgentService, CreateAgentDto, AgentSource, AgentSourceType, PlatformType } from '../../../core/services/agent.service';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import {
-  ArrowLeft01Icon,
   SparklesIcon,
   PencilEdit01Icon,
   CheckmarkCircle01Icon,
@@ -25,7 +25,7 @@ const MODEL_OPTIONS: Record<string, string[]> = {
 
 @Component({
   selector: 'app-agent-form',
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, RouterLink, IconComponent],
   templateUrl: './agent-form.component.html',
   styleUrl: './agent-form.component.scss'
 })
@@ -35,6 +35,7 @@ export class AgentFormComponent implements OnInit {
   wsId = '';
   loading = signal(false);
   error = signal('');
+  workspaceName = signal('');
 
   // Form
   form: CreateAgentDto & { image_generation_enabled?: boolean; image_prompt?: string; image_count?: number; image_reference_url?: string | null } = {
@@ -78,7 +79,6 @@ export class AgentFormComponent implements OnInit {
 
   // Icons
   readonly icons = {
-    arrowLeft: ArrowLeft01Icon,
     sparkles: SparklesIcon,
     edit: PencilEdit01Icon,
     checkmark: CheckmarkCircle01Icon,
@@ -94,6 +94,7 @@ export class AgentFormComponent implements OnInit {
 
   constructor(
     private agentService: AgentService,
+    private workspaceService: WorkspaceService,
     private tovService: ToneOfVoiceService,
     protected router: Router,
     private route: ActivatedRoute
@@ -101,6 +102,7 @@ export class AgentFormComponent implements OnInit {
 
   ngOnInit() {
     this.wsId = this.route.snapshot.paramMap.get('wsId')!;
+    this.workspaceService.getById(this.wsId).subscribe(ws => this.workspaceName.set(ws.name));
     this.tovService.list(this.wsId).subscribe(t => {
       this.toneOfVoices.set(t);
       if (t.length > 0 && !this.isEdit) {

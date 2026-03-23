@@ -13,6 +13,15 @@
         }
 
         @if (agents().length === 0) {
+          <div class="toolbar">
+            <div class="toolbar-l">
+              <div class="breadcrumb">
+                <span>{{ ws.name }}</span>
+                <span class="sep">/</span>
+                <span class="current">Agents</span>
+              </div>
+            </div>
+          </div>
           <div class="empty">
             <div class="empty-ico"><app-icon [icon]="icons.settings" [size]="40" /></div>
             <h3>Nessun Agent</h3>
@@ -24,7 +33,11 @@
         @if (agents().length > 0) {
           <div class="toolbar">
             <div class="toolbar-l">
-              <h3 class="section-title">Agents</h3>
+              <div class="breadcrumb">
+                <span>{{ ws.name }}</span>
+                <span class="sep">/</span>
+                <span class="current">Agents</span>
+              </div>
             </div>
             <div class="toolbar-r">
               <div class="view-toggle">
@@ -42,16 +55,18 @@
           <!-- List View -->
           @if (agentView() === 'list') {
             <div class="agents-table">
-              <div class="table-header agents-header">
+              <div class="agents-header">
                 <span>Nome</span>
+                <span>Canale</span>
                 <span>Provider</span>
                 <span>Modello</span>
                 <span>Tone of Voice</span>
                 <span>Azioni</span>
               </div>
               @for (agent of agents(); track agent.id) {
-                <div class="table-row agents-row">
+                <div class="agents-row">
                   <span class="td-agent-name">{{ agent.name }}</span>
+                  <span class="td-channel"><span class="channel-badge">{{ agent.platform_type }}</span></span>
                   <span class="td-provider">
                     <span class="ac-badge" [class]="'kind-' + agent.ai_provider">{{ agent.ai_provider }}</span>
                   </span>
@@ -116,7 +131,11 @@
       @if (navService.activeSection() === 'contents') {
         <div class="toolbar">
           <div class="toolbar-l">
-            <h3 class="section-title">Contents</h3>
+            <div class="breadcrumb">
+              <span>{{ ws.name }}</span>
+              <span class="sep">/</span>
+              <span class="current">Contents</span>
+            </div>
           </div>
           <div class="toolbar-r">
             <div class="filter-group">
@@ -200,7 +219,11 @@
       @if (navService.activeSection() === 'tov') {
         <div class="toolbar">
           <div class="toolbar-l">
-            <h3 class="section-title">Tone of Voice</h3>
+            <div class="breadcrumb">
+              <span>{{ ws.name }}</span>
+              <span class="sep">/</span>
+              <span class="current">Tone of Voice</span>
+            </div>
           </div>
           <button class="btn btn-primary" (click)="showTovModal.set(true)"><app-icon [icon]="icons.plus" [size]="14" /> Nuovo Tone of Voice</button>
         </div>
@@ -253,7 +276,11 @@
       @if (navService.activeSection() === 'integrations') {
         <div class="toolbar">
           <div class="toolbar-l">
-            <h3 class="section-title">Integrations</h3>
+            <div class="breadcrumb">
+              <span>{{ ws.name }}</span>
+              <span class="sep">/</span>
+              <span class="current">Integrations</span>
+            </div>
           </div>
         </div>
 

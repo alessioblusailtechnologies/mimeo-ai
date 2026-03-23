@@ -2,29 +2,13 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-h">
       <h3>
-        @if (step() === 'platform') { Nuovo Tone of Voice }
-        @if (step() === 'chat') { Definisci il tuo stile }
+        @if (step() === 'chat') { Nuovo Tone of Voice }
         @if (step() === 'done') { Tone of Voice creato }
       </h3>
       <button class="mx" (click)="close()"><app-icon [icon]="icons.close" [size]="16" /></button>
     </div>
 
-    <!-- Step 1: Platform select -->
-    @if (step() === 'platform') {
-      <div class="modal-b platform-step">
-        <p class="step-desc">Scegli la piattaforma per cui vuoi creare il tuo Tone of Voice.</p>
-        <div class="platform-grid">
-          @for (p of platforms; track p.id) {
-            <button class="platform-card" (click)="selectPlatform(p.id)">
-              <app-icon [icon]="p.icon" [size]="28" />
-              <span>{{ p.name }}</span>
-            </button>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- Step 2: Chat -->
+    <!-- Chat -->
     @if (step() === 'chat') {
       <div class="chat-area">
         <div class="chat-messages" #messagesContainer>

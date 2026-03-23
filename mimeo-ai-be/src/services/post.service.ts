@@ -65,7 +65,7 @@ export async function generateDraft(
   workspaceId: string,
   dto: GenerateDraftDto,
   userId: string
-): Promise<{ post: Post; generation: Generation }> {
+): Promise<{ post: Post; generations: Generation[] }> {
   const agent = await agentRepo.findById(dto.agent_id, userId);
   const tov = await fetchToneOfVoice(agent, userId);
 
@@ -74,38 +74,52 @@ export async function generateDraft(
   // Scrape any URLs found in the brief, reference_urls, or agent sources
   const agentSourceUrls = extractAgentSourceUrls(agent);
   const referenceContent = await enrichBriefWithReferences(dto.brief, dto.reference_urls, agentSourceUrls);
-  const userPrompt = buildUserPrompt(dto.brief, referenceContent || undefined);
+  const userPrompt = buildUserPrompt(dto.brief, referenceContent || undefined, agent.platform_type);
 
   const aiProvider = getAiProvider(agent.ai_provider);
-  const aiResponse = await aiProvider.generate({
-    systemPrompt,
-    userPrompt,
-    model: agent.ai_model,
-  });
+  const versionsCount = Math.min(Math.max(agent.versions_count || 1, 1), 3);
 
+  // Generate N versions in parallel
+  const aiResponses = await Promise.all(
+    Array.from({ length: versionsCount }, (_, i) =>
+      aiProvider.generate({
+        systemPrompt,
+        userPrompt,
+        model: agent.ai_model,
+        temperature: versionsCount > 1 ? 0.7 + i * 0.1 : undefined,
+      })
+    )
+  );
+
+  // Create post with the first version's content
   const post = await postRepo.create({
     user_id: userId,
     workspace_id: workspaceId,
     agent_id: agent.id,
     title: dto.title,
-    content: aiResponse.content,
+    content: aiResponses[0].content,
     original_brief: dto.brief,
   });
 
-  const generation = await generationRepo.create({
-    post_id: post.id,
-    user_id: userId,
-    agent_id: agent.id,
-    content: aiResponse.content,
-    ai_provider: aiResponse.provider,
-    ai_model: aiResponse.model,
-    prompt_tokens: aiResponse.promptTokens,
-    completion_tokens: aiResponse.completionTokens,
-    generation_time_ms: aiResponse.generationTimeMs,
-    is_selected: true,
-  });
+  // Create generation records — first one is selected
+  const generations = await Promise.all(
+    aiResponses.map((aiResponse, i) =>
+      generationRepo.create({
+        post_id: post.id,
+        user_id: userId,
+        agent_id: agent.id,
+        content: aiResponse.content,
+        ai_provider: aiResponse.provider,
+        ai_model: aiResponse.model,
+        prompt_tokens: aiResponse.promptTokens,
+        completion_tokens: aiResponse.completionTokens,
+        generation_time_ms: aiResponse.generationTimeMs,
+        is_selected: i === 0,
+      })
+    )
+  );
 
-  return { post, generation };
+  return { post, generations };
 }
 
 export async function regenerate(
@@ -121,7 +135,7 @@ export async function regenerate(
   // Scrape any URLs found in the original brief + agent sources
   const agentSourceUrls = extractAgentSourceUrls(agent);
   const referenceContent = await enrichBriefWithReferences(post.original_brief, undefined, agentSourceUrls);
-  const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined);
+  const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined, agent.platform_type);
 
   const aiProvider = getAiProvider(agent.ai_provider);
   const aiResponse = await aiProvider.generate({

@@ -38,54 +38,127 @@
       <p>{{ post.original_brief }}</p>
     </div>
 
+    <!-- Main Content Area -->
     <div class="content-section">
-      <div class="content-header">
-        <span class="section-label">Post Content</span>
-        @if (post.status === 'draft' && !editing()) {
-          <button class="btn-edit" (click)="startEdit()">Edit</button>
-        }
-      </div>
-
-      @if (editing()) {
-        <div class="edit-area">
-          <div class="field">
-            <label>Title (optional)</label>
-            <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
-          </div>
-          <div class="field">
-            <label>Content</label>
-            <textarea [(ngModel)]="editContent" rows="12"></textarea>
-          </div>
-          <div class="edit-actions">
-            <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
-            <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
-              {{ loading() ? 'Saving...' : 'Save' }}
+      <!-- Version tabs (only if A/B) -->
+      @if (hasMultipleVersions()) {
+        <div class="versions-tabs">
+          @for (ver of initialVersions(); track ver.id; let i = $index) {
+            <button class="version-tab"
+                    [class.active]="activeVersionTab() === i"
+                    [class.selected-version]="ver.is_selected"
+                    (click)="activeVersionTab.set(i)">
+              Versione {{ ['A', 'B', 'C'][i] }}
+              @if (ver.is_selected) {
+                <span class="tab-active-badge">Attiva</span>
+              }
             </button>
-          </div>
+          }
         </div>
+      }
+
+      @if (hasMultipleVersions()) {
+        <!-- A/B panels -->
+        @for (ver of initialVersions(); track ver.id; let i = $index) {
+          @if (activeVersionTab() === i) {
+            <div class="version-panel">
+              <div class="version-panel-header">
+                <div class="gen-meta">
+                  <span class="gen-provider">{{ ver.ai_provider }} / {{ ver.ai_model }}</span>
+                  @if (ver.prompt_tokens || ver.completion_tokens) {
+                    <span class="gen-stats-inline">{{ ver.prompt_tokens }} in / {{ ver.completion_tokens }} out</span>
+                  }
+                  @if (ver.generation_time_ms) {
+                    <span class="gen-stats-inline">{{ ver.generation_time_ms }}ms</span>
+                  }
+                </div>
+                <div class="version-panel-actions">
+                  @if (!ver.is_selected && post.status === 'draft') {
+                    <button class="btn-select" (click)="selectGeneration(ver)"
+                            [disabled]="actionLoading() === 'select-' + ver.id">
+                      Usa questa versione
+                    </button>
+                  }
+                  @if (ver.is_selected && post.status === 'draft' && !editing()) {
+                    <button class="btn-edit" (click)="startEdit()">Edit</button>
+                  }
+                </div>
+              </div>
+
+              @if (ver.is_selected && editing()) {
+                <div class="edit-area">
+                  <div class="field">
+                    <label>Title (optional)</label>
+                    <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
+                  </div>
+                  <div class="field">
+                    <label>Content</label>
+                    <textarea [(ngModel)]="editContent" rows="12"></textarea>
+                  </div>
+                  <div class="edit-actions">
+                    <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+                    <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
+                      {{ loading() ? 'Saving...' : 'Save' }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="post-content" [innerHTML]="ver.is_selected ? post.content : ver.content | markdown"></div>
+              }
+            </div>
+          }
+        }
       } @else {
-        <div class="post-content" [innerHTML]="post.content | markdown"></div>
+        <!-- Single version -->
+        <div class="content-header">
+          <span class="section-label">Post Content</span>
+          @if (post.status === 'draft' && !editing()) {
+            <button class="btn-edit" (click)="startEdit()">Edit</button>
+          }
+        </div>
+
+        @if (editing()) {
+          <div class="edit-area">
+            <div class="field">
+              <label>Title (optional)</label>
+              <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
+            </div>
+            <div class="field">
+              <label>Content</label>
+              <textarea [(ngModel)]="editContent" rows="12"></textarea>
+            </div>
+            <div class="edit-actions">
+              <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+              <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
+                {{ loading() ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="post-content" [innerHTML]="post.content | markdown"></div>
+        }
       }
     </div>
 
-    @if (generations().length > 1) {
+    <!-- Generation History (regenerations only, after initial batch) -->
+    @if (historyGenerations().length > 0) {
       <div class="generations-section">
-        <span class="section-label">Generation History ({{ generations().length }})</span>
+        <span class="section-label">Rigenerazioni ({{ historyGenerations().length }})</span>
         <div class="generations-list">
-          @for (gen of generations(); track gen.id) {
+          @for (gen of historyGenerations(); track gen.id) {
             <div class="generation-card" [class.selected]="gen.is_selected">
               <div class="gen-header">
                 <div class="gen-meta">
                   <span class="gen-provider">{{ gen.ai_provider }} / {{ gen.ai_model }}</span>
                   <span class="gen-date">{{ gen.created_at | date:'short' }}</span>
                   @if (gen.is_selected) {
-                    <span class="gen-active">Active</span>
+                    <span class="gen-active">Attiva</span>
                   }
                 </div>
                 @if (!gen.is_selected && post.status === 'draft') {
                   <button class="btn-select" (click)="selectGeneration(gen)"
                           [disabled]="actionLoading() === 'select-' + gen.id">
-                    Use this
+                    Usa questa
                   </button>
                 }
               </div>

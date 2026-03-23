@@ -7,10 +7,6 @@ import {
   Cancel01Icon,
   SparklesIcon,
   PlayIcon,
-  Linkedin01Icon,
-  TwitterIcon,
-  BloggerIcon,
-  Globe02Icon,
   CheckmarkCircle01Icon,
 } from '@hugeicons/core-free-icons';
 
@@ -28,8 +24,7 @@ export class TovChatModalComponent implements AfterViewChecked {
   @Output() created = new EventEmitter<ToneOfVoice>();
   @Output() closed = new EventEmitter<void>();
 
-  step = signal<'platform' | 'chat' | 'done'>('platform');
-  platformType = signal('linkedin');
+  step = signal<'chat' | 'done'>('chat');
   chatMessages = signal<TovChatMessage[]>([]);
   chatLoading = signal(false);
   chatResult = signal<TovChatResponse['result'] | null>(null);
@@ -41,19 +36,8 @@ export class TovChatModalComponent implements AfterViewChecked {
     close: Cancel01Icon,
     sparkles: SparklesIcon,
     send: PlayIcon,
-    linkedin: Linkedin01Icon,
-    twitter: TwitterIcon,
-    blog: BloggerIcon,
-    generic: Globe02Icon,
     check: CheckmarkCircle01Icon,
   };
-
-  readonly platforms = [
-    { id: 'linkedin', name: 'LinkedIn', icon: Linkedin01Icon },
-    { id: 'twitter', name: 'Twitter / X', icon: TwitterIcon },
-    { id: 'blog', name: 'Blog', icon: BloggerIcon },
-    { id: 'generic', name: 'Generico', icon: Globe02Icon },
-  ];
 
   constructor(private tovService: ToneOfVoiceService) {}
 
@@ -69,11 +53,6 @@ export class TovChatModalComponent implements AfterViewChecked {
     if (el) el.scrollTop = el.scrollHeight;
   }
 
-  selectPlatform(id: string) {
-    this.platformType.set(id);
-    this.step.set('chat');
-  }
-
   sendChat() {
     const msg = this.chatInput.trim();
     if (!msg) return;
@@ -84,7 +63,7 @@ export class TovChatModalComponent implements AfterViewChecked {
     this.chatInput = '';
     this.shouldScroll = true;
 
-    this.tovService.sendChat(this.wsId, msg, history, this.platformType()).subscribe({
+    this.tovService.sendChat(this.wsId, msg, history).subscribe({
       next: (response) => {
         this.chatMessages.set([...this.chatMessages(), { role: 'assistant', content: response.message }]);
         if (response.done && response.result) {

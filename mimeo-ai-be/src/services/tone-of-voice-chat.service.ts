@@ -3,19 +3,10 @@ import { getAiProvider } from './ai/ai-provider.factory.js';
 import { extractUrls, scrapeUrls, formatScrapedForPrompt } from '../utils/scraper.js';
 import type { TovChatMessage, TovChatRequest, TovChatResponse } from '../types/tone-of-voice.types.js';
 
-const PLATFORM_CONTEXTS: Record<string, string> = {
-  linkedin: `La piattaforma è LinkedIn. Concentrati su: tono professionale vs. personale, uso di storytelling, struttura dei post (hook, corpo, CTA), uso di emoji, lunghezza ideale, frequenza di posting, uso di hashtag, stile dei bullet point.`,
-  twitter: `La piattaforma è Twitter/X. Concentrati su: brevità e incisività, uso di thread, tone of voice (sarcastico, informativo, provocatorio), uso di emoji e hashtag, engagement style, frequenza.`,
-  blog: `La piattaforma è un Blog. Concentrati su: stile narrativo, livello di formalità, struttura degli articoli, uso di titoli e sottotitoli, lunghezza ideale, tono editoriale, target reader.`,
-  generic: `La piattaforma è generica. Concentrati su: stile di comunicazione generale, formalità, personalità del brand, valori da trasmettere, parole chiave ricorrenti.`,
-};
-
-function buildSystemPrompt(platformType: string): string {
-  const platformContext = PLATFORM_CONTEXTS[platformType] || PLATFORM_CONTEXTS.generic;
-
+function buildSystemPrompt(): string {
   return `Sei un esperto di brand voice e comunicazione digitale. Il tuo compito è guidare l'utente nella creazione di un Tone of Voice unico e personale attraverso una conversazione naturale.
 
-${platformContext}
+Il Tone of Voice è indipendente dalla piattaforma — definisce lo stile di comunicazione del brand/persona che potrà essere applicato su qualsiasi canale (LinkedIn, Twitter, Blog, ecc.). Concentrati su: stile di comunicazione generale, formalità, personalità del brand, valori da trasmettere, parole chiave ricorrenti.
 
 Il tuo approccio:
 1. Fai domande mirate una alla volta per capire la personalità, lo stile e gli obiettivi dell'utente
@@ -53,9 +44,9 @@ Quando hai raccolto abbastanza informazioni (dopo almeno 3 domande), PRIMA di ge
 - Storytelling: [valore e breve spiegazione]
 - Tratti: [3-4 tratti principali]
 
-**Ecco un esempio di post scritto con il tuo stile:**
+**Ecco un esempio di contenuto scritto con il tuo stile:**
 
-[Genera qui un post di esempio di 150-200 parole sulla piattaforma scelta, che dimostri concretamente il tone of voice rilevato. Deve sembrare realistico e autentico.]
+[Genera qui un testo di esempio di 150-200 parole che dimostri concretamente il tone of voice rilevato. Deve sembrare realistico e autentico.]
 
 ---
 *Ti rispecchia? Conferma se sei soddisfatto, oppure dimmi cosa vorresti cambiare (es. "troppo formale", "più umorismo", "meno emoji").*
@@ -150,7 +141,7 @@ export async function processMessage(
   userId: string
 ): Promise<TovChatResponse> {
   const aiProvider = getAiProvider('claude');
-  const systemPrompt = buildSystemPrompt(request.platform_type);
+  const systemPrompt = buildSystemPrompt();
 
   // Detect and scrape URLs in the user message
   let enrichedMessage = request.message;
@@ -183,7 +174,7 @@ export async function processMessage(
     workspaceId,
     {
       name: action.tov_name,
-      platform_type: request.platform_type,
+      platform_type: 'generic',
       description: action.description,
       style_profile: action.style_profile,
       system_prompt_fragment: action.system_prompt_fragment,

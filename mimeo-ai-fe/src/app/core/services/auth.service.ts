@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { tap } from 'rxjs';
+import { tap, Observable, Subject, switchMap, catchError, EMPTY } from 'rxjs';
 
 interface AuthSession {
   access_token: string;
@@ -39,6 +39,9 @@ export class AuthService {
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
 
+  private _refreshing = false;
+  private _refreshSubject = new Subject<string>();
+
   constructor(private http: HttpClient, private router: Router) {}
 
   register(email: string, password: string, full_name?: string) {
@@ -63,6 +66,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     this._token.set(null);
     this._user.set(null);
     this.router.navigate(['/login']);
@@ -72,11 +76,59 @@ export class AuthService {
     return this._token();
   }
 
+  /**
+   * Attempts to refresh the access token using the stored refresh_token.
+   * Returns an observable that emits the new access token.
+   * Coalesces concurrent refresh attempts into a single request.
+   */
+  refreshToken(): Observable<string> {
+    if (this._refreshing) {
+      return this._refreshSubject.asObservable();
+    }
+
+    this._refreshing = true;
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (!refreshToken) {
+      this._refreshing = false;
+      this.logout();
+      return EMPTY;
+    }
+
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, {
+      refresh_token: refreshToken
+    }).pipe(
+      tap(res => {
+        const session = res.data?.session;
+        if (session) {
+          localStorage.setItem('access_token', session.access_token);
+          localStorage.setItem('refresh_token', session.refresh_token);
+          this._token.set(session.access_token);
+          this._refreshSubject.next(session.access_token);
+        }
+        this._refreshing = false;
+      }),
+      catchError(() => {
+        this._refreshing = false;
+        this.logout();
+        return EMPTY;
+      }),
+      switchMap(() => {
+        const token = this._token();
+        return token ? new Observable<string>(sub => { sub.next(token); sub.complete(); }) : EMPTY;
+      })
+    );
+  }
+
+  get isRefreshing() { return this._refreshing; }
+  get refreshSubject$() { return this._refreshSubject.asObservable(); }
+
   private handleAuth(res: AuthResponse) {
-    const token = res.data?.session?.access_token;
-    if (token) {
-      localStorage.setItem('access_token', token);
-      this._token.set(token);
+    const session = res.data?.session;
+    if (session) {
+      localStorage.setItem('access_token', session.access_token);
+      localStorage.setItem('refresh_token', session.refresh_token);
+      this._token.set(session.access_token);
       this.loadUser();
     }
   }

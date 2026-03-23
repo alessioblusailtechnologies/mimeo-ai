@@ -30,6 +30,14 @@ export async function updateProfile(req: Request, res: Response, next: NextFunct
   } catch (err) { next(err); }
 }
 
+export async function refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { refresh_token } = req.body;
+    const data = await authService.refreshSession(refresh_token);
+    sendSuccess(res, data);
+  } catch (err) { next(err); }
+}
+
 export async function logout(_req: Request, res: Response): Promise<void> {
   sendSuccess(res, { message: 'Logged out successfully' });
 }

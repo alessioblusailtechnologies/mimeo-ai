@@ -66,6 +66,8 @@ CREATE TABLE public.mimeo_agents (
   custom_system_prompt TEXT,
   ai_provider TEXT NOT NULL CHECK (ai_provider IN ('claude', 'openai')),
   ai_model TEXT NOT NULL,
+  platform_type TEXT NOT NULL DEFAULT 'linkedin' CHECK (platform_type IN ('linkedin', 'twitter', 'blog', 'generic')),
+  versions_count INTEGER NOT NULL DEFAULT 1 CHECK (versions_count >= 1 AND versions_count <= 3),
   is_active BOOLEAN NOT NULL DEFAULT true,
   schedule_enabled BOOLEAN NOT NULL DEFAULT false,
   schedule_cron TEXT,

@@ -41,7 +41,7 @@ export interface TovChatMessage {
 export interface TovChatRequest {
   message: string;
   history: TovChatMessage[];
-  platform_type: string;
+  platform_type?: string;
 }
 
 export interface TovChatResponse {

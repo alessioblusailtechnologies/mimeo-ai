@@ -66,10 +66,10 @@ export class ToneOfVoiceService {
     return this.http.delete(`${this.url(wsId)}/${id}`);
   }
 
-  sendChat(wsId: string, message: string, history: TovChatMessage[], platformType: string) {
+  sendChat(wsId: string, message: string, history: TovChatMessage[]) {
     return this.http.post<ApiResponse<TovChatResponse>>(
       `${this.url(wsId)}/chat`,
-      { message, history, platform_type: platformType }
+      { message, history }
     ).pipe(map(r => r.data));
   }
 }

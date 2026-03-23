@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { PostService, Post, Generation } from '../../../core/services/post.service';
+import { AgentService, Agent } from '../../../core/services/agent.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
@@ -15,6 +16,7 @@ import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 })
 export class PostDetailComponent implements OnInit {
   post = signal<Post | null>(null);
+  agent = signal<Agent | null>(null);
   generations = signal<Generation[]>([]);
   editing = signal(false);
   editContent = '';
@@ -23,6 +25,31 @@ export class PostDetailComponent implements OnInit {
   actionLoading = signal('');
   copied = signal(false);
   wsId = '';
+  activeVersionTab = signal(0);
+
+  versionsCount = computed(() => this.agent()?.versions_count || 1);
+
+  // Initial versions (first N generations created together)
+  initialVersions = computed(() => {
+    const gens = this.generations();
+    const count = this.versionsCount();
+    if (count <= 1 || gens.length === 0) return [];
+    // Initial versions are the last N in the array (oldest, created together)
+    // Generations are ordered newest-first from the API
+    return gens.slice(-count).reverse();
+  });
+
+  // History: all generations after the initial batch
+  historyGenerations = computed(() => {
+    const gens = this.generations();
+    const count = this.versionsCount();
+    if (count <= 1) return gens;
+    // Everything except the last N (the initial batch)
+    const history = gens.slice(0, -count);
+    return history;
+  });
+
+  hasMultipleVersions = computed(() => this.initialVersions().length > 1);
 
   readonly icons = {
     arrowLeft: ArrowLeft01Icon,
@@ -30,6 +57,7 @@ export class PostDetailComponent implements OnInit {
 
   constructor(
     private postService: PostService,
+    private agentService: AgentService,
     private route: ActivatedRoute,
     protected router: Router
   ) {}
@@ -46,6 +74,13 @@ export class PostDetailComponent implements OnInit {
       this.post.set(post);
       this.editContent = post.content;
       this.editTitle = post.title || '';
+      // Load agent to know versions_count
+      if (post.agent_id) {
+        this.agentService.getById(this.wsId, post.agent_id).subscribe({
+          next: agent => this.agent.set(agent),
+          error: () => {},
+        });
+      }
     });
   }
 

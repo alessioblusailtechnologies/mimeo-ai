@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { map } from 'rxjs';
 
 export type AgentSourceType = 'url' | 'file';
+export type PlatformType = 'linkedin' | 'twitter' | 'blog' | 'generic';
 
 export interface AgentSource {
   type: AgentSourceType;
@@ -23,6 +24,8 @@ export interface Agent {
   custom_system_prompt: string | null;
   ai_provider: 'claude' | 'openai';
   ai_model: string;
+  platform_type: PlatformType;
+  versions_count: number;
   is_active: boolean;
   schedule_enabled: boolean;
   schedule_cron: string | null;
@@ -41,6 +44,8 @@ export interface CreateAgentDto {
   custom_system_prompt?: string;
   ai_provider: 'claude' | 'openai';
   ai_model: string;
+  platform_type?: PlatformType;
+  versions_count?: number;
   schedule_enabled?: boolean;
   schedule_cron?: string;
   schedule_brief?: string;

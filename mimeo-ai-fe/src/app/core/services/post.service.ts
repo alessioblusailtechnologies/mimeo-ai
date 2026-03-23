@@ -48,7 +48,7 @@ export class PostService {
   generate(wsId: string, agentId: string, brief: string, title?: string, referenceUrls?: string[]) {
     const body: Record<string, unknown> = { agent_id: agentId, brief, title };
     if (referenceUrls?.length) body['reference_urls'] = referenceUrls;
-    return this.http.post<ApiResponse<{ post: Post; generation: Generation }>>(
+    return this.http.post<ApiResponse<{ post: Post; generations: Generation[] }>>(
       `${this.url(wsId)}/generate`,
       body
     ).pipe(map(r => r.data));

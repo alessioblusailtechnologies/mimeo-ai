@@ -211,10 +211,6 @@ export class WorkspaceDetailComponent implements OnInit, OnDestroy {
 
   getPostChannel(post: Post): string {
     const agent = this.agentFullMap()[post.agent_id];
-    if (agent?.tone_of_voice_id) {
-      const tov = this.tovMap()[agent.tone_of_voice_id];
-      return tov?.platform_type || '-';
-    }
-    return '-';
+    return agent?.platform_type || '-';
   }
 }

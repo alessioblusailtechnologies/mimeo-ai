@@ -25,25 +25,51 @@
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="field">
-        <label for="model">AI Model</label>
-        <select id="model" [(ngModel)]="form.ai_model" name="ai_model">
-          @for (model of modelOptions; track model) {
-            <option [value]="model">{{ model }}</option>
-          }
-        </select>
+    <div class="field">
+      <label for="model">AI Model</label>
+      <select id="model" [(ngModel)]="form.ai_model" name="ai_model">
+        @for (model of modelOptions; track model) {
+          <option [value]="model">{{ model }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Canale / Piattaforma</label>
+      <div class="platform-select">
+        @for (p of platforms; track p.id) {
+          <button type="button" class="platform-opt" [class.active]="form.platform_type === p.id"
+                  (click)="form.platform_type = p.id">
+            <app-icon [icon]="p.icon" [size]="18" />
+            <span>{{ p.name }}</span>
+          </button>
+        }
       </div>
-      <div class="field">
-        <label>Tone of Voice</label>
-        <div class="tone-switch">
-          <button type="button" class="tone-opt" [class.active]="toneMode() === 'custom'" (click)="toneMode.set('custom')">
-            <app-icon [icon]="icons.sparkles" [size]="14" /> Personalizzato
+    </div>
+
+    <!-- Versions (A/B testing) -->
+    <div class="field">
+      <label>Versioni contenuto <span class="label-hint">(A/B testing)</span></label>
+      <div class="versions-select">
+        @for (n of versionOptions; track n) {
+          <button type="button" class="version-opt" [class.active]="form.versions_count === n"
+                  (click)="form.versions_count = n">
+            {{ n }}
           </button>
-          <button type="button" class="tone-opt" [class.active]="toneMode() === 'preset'" (click)="toneMode.set('preset')">
-            <app-icon [icon]="icons.edit" [size]="14" /> Preconfigurato
-          </button>
-        </div>
+        }
+      </div>
+      <span class="field-hint">Genera fino a 3 varianti del contenuto per scegliere la migliore.</span>
+    </div>
+
+    <div class="field">
+      <label>Tone of Voice</label>
+      <div class="tone-switch">
+        <button type="button" class="tone-opt" [class.active]="toneMode() === 'custom'" (click)="toneMode.set('custom')">
+          <app-icon [icon]="icons.sparkles" [size]="14" /> Personalizzato
+        </button>
+        <button type="button" class="tone-opt" [class.active]="toneMode() === 'preset'" (click)="toneMode.set('preset')">
+          <app-icon [icon]="icons.edit" [size]="14" /> Preconfigurato
+        </button>
       </div>
     </div>
 
@@ -60,7 +86,6 @@
             @for (tov of toneOfVoices(); track tov.id) {
               <button type="button" class="tone-card" [class.selected]="selectedTovId === tov.id"
                       (click)="selectTov(tov.id)">
-                <span class="tc-platform">{{ tov.platform_type }}</span>
                 <span class="tc-name">{{ tov.name }}</span>
                 @if (tov.description) {
                   <span class="tc-desc">{{ tov.description }}</span>

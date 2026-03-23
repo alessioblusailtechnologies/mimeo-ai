@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AgentService, CreateAgentDto, AgentSource, AgentSourceType } from '../../../core/services/agent.service';
+import { AgentService, CreateAgentDto, AgentSource, AgentSourceType, PlatformType } from '../../../core/services/agent.service';
 import { ToneOfVoiceService, ToneOfVoice } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import {
@@ -13,6 +13,10 @@ import {
   File01Icon,
   Delete01Icon,
   PlusSignIcon,
+  Linkedin01Icon,
+  TwitterIcon,
+  BloggerIcon,
+  Globe02Icon,
 } from '@hugeicons/core-free-icons';
 
 const MODEL_OPTIONS: Record<string, string[]> = {
@@ -39,11 +43,22 @@ export class AgentFormComponent implements OnInit {
     tone: 'professional',
     ai_provider: 'claude',
     ai_model: 'claude-opus-4-6',
+    platform_type: 'linkedin',
+    versions_count: 1,
   };
+
+  readonly versionOptions = [1, 2, 3];
 
   scheduleBrief = '';
 
   tones = ['professional', 'creative', 'technical', 'casual', 'inspirational', 'educational'];
+
+  readonly platforms = [
+    { id: 'linkedin' as PlatformType, name: 'LinkedIn', icon: Linkedin01Icon },
+    { id: 'twitter' as PlatformType, name: 'Twitter / X', icon: TwitterIcon },
+    { id: 'blog' as PlatformType, name: 'Blog', icon: BloggerIcon },
+    { id: 'generic' as PlatformType, name: 'Generico', icon: Globe02Icon },
+  ];
   toneOfVoices = signal<ToneOfVoice[]>([]);
   selectedTovId = '';
   toneMode = signal<'custom' | 'preset'>('preset');
@@ -95,6 +110,8 @@ export class AgentFormComponent implements OnInit {
           tone: agent.tone,
           ai_provider: agent.ai_provider,
           ai_model: agent.ai_model,
+          platform_type: agent.platform_type || 'linkedin',
+          versions_count: agent.versions_count || 1,
         };
         this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';

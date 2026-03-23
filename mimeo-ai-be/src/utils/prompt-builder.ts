@@ -1,10 +1,18 @@
 import type { Agent } from '../types/agent.types.js';
 import type { ToneOfVoice } from '../types/tone-of-voice.types.js';
 
+const PLATFORM_LABELS: Record<string, string> = {
+  linkedin: 'LinkedIn',
+  twitter: 'Twitter/X',
+  blog: 'Blog',
+  generic: 'social media',
+};
+
 export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null): string {
   const parts: string[] = [];
+  const platformLabel = PLATFORM_LABELS[agent.platform_type] || PLATFORM_LABELS.linkedin;
 
-  parts.push('You are a LinkedIn content writer.');
+  parts.push(`You are a ${platformLabel} content writer.`);
 
   if (toneOfVoice) {
     parts.push(toneOfVoice.system_prompt_fragment);
@@ -31,10 +39,14 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
     parts.push(agent.custom_system_prompt);
   }
 
-  parts.push(
-    'Generate a LinkedIn post. Use appropriate formatting (line breaks, emojis if fitting the tone). ' +
-    'Keep it engaging and within LinkedIn best practices for length (1300 characters optimal, 3000 max).'
-  );
+  const platformInstructions: Record<string, string> = {
+    linkedin: 'Generate a LinkedIn post. Use appropriate formatting (line breaks, emojis if fitting the tone). Keep it engaging and within LinkedIn best practices for length (1300 characters optimal, 3000 max).',
+    twitter: 'Generate a Twitter/X post. Keep it concise and impactful (280 characters max per tweet). If the content requires more space, structure it as a thread with numbered tweets.',
+    blog: 'Generate a blog post. Use headings, subheadings, and paragraphs for readability. Aim for 500-1500 words depending on the topic depth.',
+    generic: 'Generate a social media post. Use appropriate formatting for the platform. Keep it engaging and well-structured.',
+  };
+
+  parts.push(platformInstructions[agent.platform_type] || platformInstructions.linkedin);
 
   // Critical: never disclaim about limitations
   parts.push(
@@ -49,8 +61,9 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
   return parts.join('\n\n');
 }
 
-export function buildUserPrompt(brief: string, referenceContent?: string): string {
-  let prompt = `Write a LinkedIn post about the following topic/brief:\n\n${brief}`;
+export function buildUserPrompt(brief: string, referenceContent?: string, platformType?: string): string {
+  const platformLabel = PLATFORM_LABELS[platformType || 'linkedin'] || PLATFORM_LABELS.linkedin;
+  let prompt = `Write a ${platformLabel} post about the following topic/brief:\n\n${brief}`;
 
   if (referenceContent) {
     prompt += `\n\nUse the following real-time reference material as your primary source. Extract key insights, data points, quotes, or ideas from this content and incorporate them naturally into the post. Cite specific facts and numbers when available:\n\n${referenceContent}`;

@@ -247,6 +247,82 @@
   gap: 8px;
 }
 
+// Versions A/B tabs
+.versions-tabs {
+  display: flex;
+  gap: 0;
+  margin: -16px -16px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-0);
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
+}
+
+.version-tab {
+  flex: 1;
+  padding: 11px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:not(:last-child) { border-right: 1px solid var(--border); }
+  &:hover { color: var(--text-2); background: var(--bg-3); }
+
+  &.active {
+    color: var(--accent-l);
+    background: var(--bg-2);
+    border-bottom-color: var(--accent);
+  }
+
+  &.selected-version {
+    &.active { border-bottom-color: var(--green); color: var(--green); }
+  }
+}
+
+.tab-active-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--green);
+  background: var(--green-bg);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.version-panel {
+  animation: fadeIn .2s ease both;
+}
+
+.version-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.version-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gen-stats-inline {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+}
+
 // Generations
 .generations-section {
   margin-top: 20px;

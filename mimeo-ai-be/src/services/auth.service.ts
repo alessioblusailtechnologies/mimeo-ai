@@ -25,6 +25,15 @@ export async function login(dto: LoginDto) {
   return data;
 }
 
+export async function refreshSession(refreshToken: string) {
+  const { data, error } = await supabaseClient.auth.refreshSession({
+    refresh_token: refreshToken,
+  });
+
+  if (error) throw new BadRequestError(error.message);
+  return data;
+}
+
 export async function getProfile(userId: string): Promise<Profile> {
   const { data, error } = await supabaseAdmin
     .from('mimeo_profiles')

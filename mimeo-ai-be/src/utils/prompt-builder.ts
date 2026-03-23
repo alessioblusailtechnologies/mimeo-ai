@@ -61,12 +61,16 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
   return parts.join('\n\n');
 }
 
-export function buildUserPrompt(brief: string, referenceContent?: string, platformType?: string): string {
+export function buildUserPrompt(brief: string, referenceContent?: string, platformType?: string, userFeedback?: string): string {
   const platformLabel = PLATFORM_LABELS[platformType || 'linkedin'] || PLATFORM_LABELS.linkedin;
   let prompt = `Write a ${platformLabel} post about the following topic/brief:\n\n${brief}`;
 
   if (referenceContent) {
     prompt += `\n\nUse the following real-time reference material as your primary source. Extract key insights, data points, quotes, or ideas from this content and incorporate them naturally into the post. Cite specific facts and numbers when available:\n\n${referenceContent}`;
+  }
+
+  if (userFeedback) {
+    prompt += `\n\nAdditional instructions from the user for this regeneration. Follow these closely to adjust the output:\n${userFeedback}`;
   }
 
   return prompt;

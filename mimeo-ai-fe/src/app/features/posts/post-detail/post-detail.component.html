@@ -7,8 +7,8 @@
       </div>
       <div class="header-actions">
         @if (post.status === 'draft') {
-          <button class="btn-secondary" (click)="regenerate()" [disabled]="actionLoading() === 'regenerate'">
-            {{ actionLoading() === 'regenerate' ? 'Regenerating...' : 'Regenerate' }}
+          <button class="btn-secondary" (click)="toggleFeedback()" [disabled]="actionLoading() === 'regenerate'">
+            {{ showFeedbackInput() ? 'Annulla' : 'Rigenera' }}
           </button>
           <button class="btn-primary" (click)="approve()" [disabled]="actionLoading() === 'approve'">
             {{ actionLoading() === 'approve' ? 'Approving...' : 'Approve' }}
@@ -24,6 +24,18 @@
         </button>
       </div>
     </div>
+
+    @if (showFeedbackInput()) {
+      <div class="feedback-bar">
+        <input type="text" class="feedback-input"
+               [(ngModel)]="feedbackText"
+               placeholder="Es: rendilo più formale, aggiungi dati, accorcialo..."
+               (keydown.enter)="regenerate()" />
+        <button class="btn-regenerate" (click)="regenerate()" [disabled]="actionLoading() === 'regenerate'">
+          {{ actionLoading() === 'regenerate' ? 'Rigenerando...' : 'Rigenera' }}
+        </button>
+      </div>
+    }
 
     <div class="post-info">
       <span class="status-badge" [class]="'status-' + post.status">{{ post.status }}</span>

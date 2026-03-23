@@ -68,9 +68,11 @@ export class PostService {
     return this.http.patch<ApiResponse<Post>>(`${this.url(wsId)}/${id}`, data).pipe(map(r => r.data));
   }
 
-  regenerate(wsId: string, id: string) {
+  regenerate(wsId: string, id: string, userFeedback?: string) {
+    const body: Record<string, unknown> = {};
+    if (userFeedback) body['user_feedback'] = userFeedback;
     return this.http.post<ApiResponse<{ post: Post; generation: Generation }>>(
-      `${this.url(wsId)}/${id}/regenerate`, {}
+      `${this.url(wsId)}/${id}/regenerate`, body
     ).pipe(map(r => r.data));
   }
 

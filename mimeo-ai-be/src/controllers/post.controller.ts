@@ -12,7 +12,8 @@ export async function generate(req: Request<{ wsId: string }>, res: Response, ne
 
 export async function regenerate(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
   try {
-    const result = await postService.regenerate(req.params.id, req.user!.id);
+    const userFeedback = req.body?.user_feedback as string | undefined;
+    const result = await postService.regenerate(req.params.id, req.user!.id, userFeedback);
     sendSuccess(res, result);
   } catch (err) { next(err); }
 }

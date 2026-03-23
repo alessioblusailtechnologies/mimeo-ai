@@ -26,6 +26,8 @@ export class PostDetailComponent implements OnInit {
   copied = signal(false);
   wsId = '';
   activeVersionTab = signal(0);
+  showFeedbackInput = signal(false);
+  feedbackText = '';
 
   versionsCount = computed(() => this.agent()?.versions_count || 1);
 
@@ -110,14 +112,22 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
+  toggleFeedback() {
+    this.showFeedbackInput.update(v => !v);
+    if (!this.showFeedbackInput()) this.feedbackText = '';
+  }
+
   regenerate() {
     const p = this.post();
     if (!p) return;
     this.actionLoading.set('regenerate');
-    this.postService.regenerate(this.wsId, p.id).subscribe({
+    const feedback = this.feedbackText.trim() || undefined;
+    this.postService.regenerate(this.wsId, p.id, feedback).subscribe({
       next: result => {
         this.generations.update(gens => [result.generation, ...gens]);
         this.actionLoading.set('');
+        this.feedbackText = '';
+        this.showFeedbackInput.set(false);
       },
       error: () => this.actionLoading.set(''),
     });

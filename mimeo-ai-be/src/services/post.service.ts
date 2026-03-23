@@ -124,7 +124,8 @@ export async function generateDraft(
 
 export async function regenerate(
   postId: string,
-  userId: string
+  userId: string,
+  userFeedback?: string
 ): Promise<{ post: Post; generation: Generation }> {
   const post = await postRepo.findById(postId, userId);
   const agent = await agentRepo.findById(post.agent_id, userId);
@@ -135,7 +136,7 @@ export async function regenerate(
   // Scrape any URLs found in the original brief + agent sources
   const agentSourceUrls = extractAgentSourceUrls(agent);
   const referenceContent = await enrichBriefWithReferences(post.original_brief, undefined, agentSourceUrls);
-  const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined, agent.platform_type);
+  const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined, agent.platform_type, userFeedback);
 
   const aiProvider = getAiProvider(agent.ai_provider);
   const aiResponse = await aiProvider.generate({

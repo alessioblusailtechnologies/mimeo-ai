@@ -13,5 +13,6 @@ router.get('/', agentController.list);
 router.get('/:id', agentController.getById);
 router.patch('/:id', validate(updateAgentSchema, 'body'), agentController.update);
 router.delete('/:id', agentController.remove);
+router.post('/upload-reference-image', agentController.uploadReferenceImage);
 
 export default router;

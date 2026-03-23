@@ -31,6 +31,7 @@ export interface Agent {
   image_generation_enabled: boolean;
   image_prompt: string | null;
   image_count: number;
+  image_reference_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,7 @@ export interface CreateAgentDto {
   image_generation_enabled?: boolean;
   image_prompt?: string;
   image_count?: number;
+  image_reference_url?: string | null;
 }
 
 export interface UpdateAgentDto {
@@ -74,4 +76,5 @@ export interface UpdateAgentDto {
   image_generation_enabled?: boolean;
   image_prompt?: string;
   image_count?: number;
+  image_reference_url?: string | null;
 }

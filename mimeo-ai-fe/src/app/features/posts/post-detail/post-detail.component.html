@@ -158,74 +158,80 @@
 
     <!-- Images Section -->
     <div class="images-section">
-      <div class="images-header">
-        <span class="section-label">Immagini</span>
-        <div class="images-header-actions">
-          @if (agentHasImageGen() && post.status === 'draft') {
-            <button class="btn-edit" (click)="toggleImageFeedback()">
-              {{ showImageFeedback() ? 'Annulla' : 'Rigenera immagini' }}
+      <span class="section-label">Immagini</span>
+      <div class="images-card">
+        <!-- Images grid / states -->
+        @if (postImages().length > 0) {
+          <div class="images-grid">
+            @for (img of postImages(); track img.id) {
+              <div class="image-card" (click)="previewImage.set(img)">
+                <img [src]="img.public_url" [alt]="img.prompt" loading="lazy" />
+                <div class="image-card-overlay">
+                  <span class="image-prompt-text">{{ img.prompt }}</span>
+                  <button class="btn-delete-img" (click)="$event.stopPropagation(); deleteImage(img)">Elimina</button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (post.image_status === 'generating') {
+          <div class="image-generating-bar">
+            <span class="image-spinner"></span>
+            <span>Generazione immagini in corso...</span>
+          </div>
+        } @else if (post.image_status === 'failed') {
+          <div class="images-empty-state">
+            <span class="empty-icon">!</span>
+            <span>Generazione immagini fallita</span>
+          </div>
+        } @else if (!showImageGen() && !showImageFeedback()) {
+          <div class="images-empty-state">
+            <span>Nessuna immagine generata</span>
+          </div>
+        }
+
+        <!-- Expanded input bars -->
+        @if (showImageFeedback()) {
+          <div class="image-input-bar">
+            <input type="text" class="feedback-input"
+                   [(ngModel)]="imageFeedbackText"
+                   placeholder="Es: rendila più luminosa, aggiungi persone, stile minimalista..."
+                   (keydown.enter)="regenerateImages()" />
+            <button class="btn-action-go" (click)="regenerateImages()" [disabled]="imageLoading()">
+              {{ imageLoading() ? 'Generando...' : 'Rigenera' }}
             </button>
-          }
-          <button class="btn-edit" (click)="toggleImageGen()">
-            {{ showImageGen() ? 'Annulla' : '+ Genera manualmente' }}
-          </button>
-        </div>
-      </div>
+          </div>
+        }
 
-      @if (showImageFeedback()) {
-        <div class="image-gen-bar">
-          <input type="text" class="feedback-input"
-                 [(ngModel)]="imageFeedbackText"
-                 placeholder="Es: rendila più luminosa, aggiungi persone, stile minimalista..."
-                 (keydown.enter)="regenerateImages()" />
-          <button class="btn-regenerate" (click)="regenerateImages()" [disabled]="imageLoading()">
-            {{ imageLoading() ? 'Generando...' : 'Rigenera' }}
-          </button>
-        </div>
-      }
-
-      @if (showImageGen()) {
-        <div class="image-gen-bar">
-          <div class="image-gen-fields">
+        @if (showImageGen()) {
+          <div class="image-input-bar">
             <input type="text" class="feedback-input"
                    [(ngModel)]="imagePrompt"
                    placeholder="Descrivi l'immagine da generare..."
                    (keydown.enter)="generateImages()" />
             <select class="image-count-select" [(ngModel)]="imageCount">
-              <option [value]="1">1 immagine</option>
-              <option [value]="2">2 immagini</option>
-              <option [value]="3">3 immagini</option>
-              <option [value]="4">4 immagini</option>
+              <option [value]="1">1</option>
+              <option [value]="2">2</option>
+              <option [value]="3">3</option>
+              <option [value]="4">4</option>
             </select>
+            <button class="btn-action-go" (click)="generateImages()" [disabled]="imageLoading() || !imagePrompt.trim()">
+              {{ imageLoading() ? 'Generando...' : 'Genera' }}
+            </button>
           </div>
-          <button class="btn-regenerate" (click)="generateImages()" [disabled]="imageLoading() || !imagePrompt.trim()">
-            {{ imageLoading() ? 'Generando...' : 'Genera' }}
+        }
+
+        <!-- Action buttons -->
+        <div class="images-actions">
+          @if (agentHasImageGen() && post.status === 'draft') {
+            <button class="btn-img-action" [class.active]="showImageFeedback()" (click)="toggleImageFeedback()">
+              {{ showImageFeedback() ? 'Annulla' : 'Rigenera immagini' }}
+            </button>
+          }
+          <button class="btn-img-action" [class.active]="showImageGen()" (click)="toggleImageGen()">
+            {{ showImageGen() ? 'Annulla' : 'Genera manualmente' }}
           </button>
         </div>
-      }
-
-      @if (postImages().length > 0) {
-        <div class="images-grid">
-          @for (img of postImages(); track img.id) {
-            <div class="image-card">
-              <img [src]="img.public_url" [alt]="img.prompt" loading="lazy" />
-              <div class="image-card-overlay">
-                <span class="image-prompt-text">{{ img.prompt }}</span>
-                <button class="btn-delete-img" (click)="deleteImage(img)">Elimina</button>
-              </div>
-            </div>
-          }
-        </div>
-      } @else if (post.image_status === 'generating') {
-        <div class="image-generating-bar">
-          <span class="image-spinner"></span>
-          <span>Generazione immagini in corso...</span>
-        </div>
-      } @else if (post.image_status === 'failed') {
-        <p class="empty-images">Generazione immagini fallita</p>
-      } @else if (!showImageGen() && !showImageFeedback()) {
-        <p class="empty-images">Nessuna immagine generata</p>
-      }
+      </div>
     </div>
 
     <!-- Generation History (regenerations only, after initial batch) -->
@@ -265,4 +271,17 @@
       </div>
     }
   </div>
+
+  <!-- Image Preview Modal -->
+  @if (previewImage(); as preview) {
+    <div class="modal-backdrop" (click)="previewImage.set(null)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <img [src]="preview.public_url" [alt]="preview.prompt" />
+        @if (preview.prompt) {
+          <p class="modal-prompt">{{ preview.prompt }}</p>
+        }
+        <button class="modal-close" (click)="previewImage.set(null)">&times;</button>
+      </div>
+    </div>
+  }
 }

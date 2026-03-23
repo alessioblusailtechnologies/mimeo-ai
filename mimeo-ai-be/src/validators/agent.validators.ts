@@ -24,6 +24,7 @@ export const createAgentSchema = z.object({
   image_generation_enabled: z.boolean().optional().default(false),
   image_prompt: z.string().max(2000).optional(),
   image_count: z.number().int().min(1).max(4).optional().default(1),
+  image_reference_url: z.string().url().max(2000).nullable().optional(),
 });
 
 export const updateAgentSchema = createAgentSchema.partial();

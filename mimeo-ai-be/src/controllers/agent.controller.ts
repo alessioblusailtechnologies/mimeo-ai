@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as agentService from '../services/agent.service.js';
 import { sendSuccess, sendCreated, sendNoContent } from '../utils/api-response.js';
+import { BadRequestError } from '../utils/api-error.js';
 
 export async function create(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -34,5 +35,16 @@ export async function remove(req: Request<{ wsId: string; id: string }>, res: Re
   try {
     await agentService.deleteAgent(req.params.id, req.user!.id);
     sendNoContent(res);
+  } catch (err) { next(err); }
+}
+
+export async function uploadReferenceImage(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string') {
+      throw new BadRequestError('image (base64) is required');
+    }
+    const result = await agentService.uploadAndAnalyzeReferenceImage(image, req.user!.id);
+    sendSuccess(res, result);
   } catch (err) { next(err); }
 }

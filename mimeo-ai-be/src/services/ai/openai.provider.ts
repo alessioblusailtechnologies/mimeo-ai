@@ -36,7 +36,7 @@ export class OpenAIProvider implements AiProvider, AiImageProvider {
     const n = Math.min(Math.max(request.n || 1, 1), 4);
 
     const response = await this.client.images.generate({
-      model: 'gpt-image-1',
+      model: 'gpt-image-1.5',
       prompt: request.prompt,
       n,
       size: request.size || '1024x1024',
@@ -56,7 +56,7 @@ export class OpenAIProvider implements AiProvider, AiImageProvider {
 
     return {
       images: buffers,
-      model: 'gpt-image-1',
+      model: 'gpt-image-1.5',
       provider: 'openai',
       generationTimeMs: Date.now() - start,
     };

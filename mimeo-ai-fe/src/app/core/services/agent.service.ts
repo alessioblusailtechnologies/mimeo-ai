@@ -34,6 +34,7 @@ export interface Agent {
   image_generation_enabled: boolean;
   image_prompt: string | null;
   image_count: number;
+  image_reference_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,6 +57,7 @@ export interface CreateAgentDto {
   image_generation_enabled?: boolean;
   image_prompt?: string;
   image_count?: number;
+  image_reference_url?: string | null;
 }
 
 interface ApiResponse<T> {
@@ -89,5 +91,12 @@ export class AgentService {
 
   delete(wsId: string, id: string) {
     return this.http.delete(`${this.url(wsId)}/${id}`);
+  }
+
+  uploadReferenceImage(wsId: string, imageBase64: string) {
+    return this.http.post<ApiResponse<{ url: string; style_description: string }>>(
+      `${this.url(wsId)}/upload-reference-image`,
+      { image: imageBase64 }
+    ).pipe(map(r => r.data));
   }
 }

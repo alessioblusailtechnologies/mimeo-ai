@@ -188,6 +188,37 @@
       </div>
 
       @if (form.image_generation_enabled) {
+        <!-- Reference Image Upload -->
+        <div class="field">
+          <label>Immagine di riferimento stile <span class="label-hint">(opzionale)</span></label>
+          <span class="field-hint" style="margin-bottom: 8px">Carica un'immagine di esempio e l'AI analizzerà lo stile per generare immagini simili.</span>
+
+          @if (referenceImagePreview()) {
+            <div class="reference-image-preview">
+              <img [src]="referenceImagePreview()" alt="Immagine di riferimento" />
+              @if (referenceImageLoading()) {
+                <div class="reference-overlay">
+                  <span class="ref-spinner"></span>
+                  <span>Analisi stile in corso...</span>
+                </div>
+              }
+              @if (!referenceImageLoading()) {
+                <button type="button" class="btn-remove-ref" (click)="removeReferenceImage()">
+                  <app-icon [icon]="icons.delete" [size]="13" /> Rimuovi
+                </button>
+              }
+            </div>
+          } @else {
+            <label class="reference-upload-area">
+              <app-icon [icon]="icons.plus" [size]="18" />
+              <span>Carica immagine di riferimento</span>
+              <span class="file-hint">PNG, JPG, WEBP</span>
+              <input type="file" (change)="onReferenceImageSelected($event)"
+                     accept="image/png,image/jpeg,image/webp" hidden />
+            </label>
+          }
+        </div>
+
         <div class="field">
           <label for="image_prompt">Image Prompt</label>
           <textarea id="image_prompt" [(ngModel)]="form.image_prompt" name="image_prompt"

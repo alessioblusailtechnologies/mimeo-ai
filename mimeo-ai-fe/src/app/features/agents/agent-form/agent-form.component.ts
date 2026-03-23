@@ -38,7 +38,7 @@ export class AgentFormComponent implements OnInit {
   error = signal('');
 
   // Form
-  form: CreateAgentDto & { image_generation_enabled?: boolean; image_prompt?: string; image_count?: number } = {
+  form: CreateAgentDto & { image_generation_enabled?: boolean; image_prompt?: string; image_count?: number; image_reference_url?: string | null } = {
     name: '',
     tone: 'professional',
     ai_provider: 'claude',
@@ -48,7 +48,12 @@ export class AgentFormComponent implements OnInit {
     image_generation_enabled: false,
     image_prompt: '',
     image_count: 1,
+    image_reference_url: null,
   };
+
+  // Reference image
+  referenceImagePreview = signal<string | null>(null);
+  referenceImageLoading = signal(false);
 
   readonly versionOptions = [1, 2, 3];
   readonly imageCountOptions = [1, 2, 3, 4];
@@ -119,7 +124,11 @@ export class AgentFormComponent implements OnInit {
           image_generation_enabled: agent.image_generation_enabled || false,
           image_prompt: agent.image_prompt || '',
           image_count: agent.image_count || 1,
+          image_reference_url: agent.image_reference_url || null,
         };
+        if (agent.image_reference_url) {
+          this.referenceImagePreview.set(agent.image_reference_url);
+        }
         this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';
         this.sources.set(agent.sources || []);
@@ -177,6 +186,46 @@ export class AgentFormComponent implements OnInit {
     input.value = '';
   }
 
+  onReferenceImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    input.value = '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      this.referenceImagePreview.set(base64);
+      this.referenceImageLoading.set(true);
+
+      this.agentService.uploadReferenceImage(this.wsId, base64).subscribe({
+        next: result => {
+          this.form.image_reference_url = result.url;
+          this.referenceImagePreview.set(result.url);
+          // Auto-populate image_prompt with style description if empty
+          const currentPrompt = (this.form.image_prompt || '').trim();
+          if (!currentPrompt) {
+            this.form.image_prompt = result.style_description;
+          } else {
+            this.form.image_prompt = currentPrompt + '\n\nStile di riferimento: ' + result.style_description;
+          }
+          this.referenceImageLoading.set(false);
+        },
+        error: () => {
+          this.referenceImagePreview.set(null);
+          this.referenceImageLoading.set(false);
+          this.error.set('Errore nel caricamento dell\'immagine di riferimento');
+        },
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeReferenceImage() {
+    this.referenceImagePreview.set(null);
+    this.form.image_reference_url = null;
+  }
+
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
@@ -188,6 +237,7 @@ export class AgentFormComponent implements OnInit {
       schedule_brief: this.scheduleBrief || undefined,
       sources: currentSources.length > 0 ? currentSources : undefined,
       image_prompt: (this.form.image_prompt as string)?.trim() || undefined,
+      image_reference_url: this.form.image_reference_url || null,
     };
 
     const req = this.isEdit && this.agentId
@@ -195,7 +245,7 @@ export class AgentFormComponent implements OnInit {
       : this.agentService.create(this.wsId, dto);
 
     req.subscribe({
-      next: () => this.router.navigate(['/workspaces', this.wsId]),
+      next: () => this.router.navigate(['/workspaces', this.wsId, 'agents']),
       error: (err) => {
         this.error.set(err.error?.error || 'Failed to save agent');
         this.loading.set(false);
@@ -204,6 +254,6 @@ export class AgentFormComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/workspaces', this.wsId]);
+    this.router.navigate(['/workspaces', this.wsId, 'agents']);
   }
 }

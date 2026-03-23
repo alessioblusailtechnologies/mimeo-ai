@@ -39,6 +39,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   imageLoading = signal(false);
   showImageFeedback = signal(false);
   imageFeedbackText = '';
+  previewImage = signal<PostImage | null>(null);
   private imagePolling$?: Subscription;
 
   agentHasImageGen = computed(() => this.agent()?.image_generation_enabled === true);

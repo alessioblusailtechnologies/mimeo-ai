@@ -168,12 +168,13 @@
 
         @if (newSourceType() === 'file') {
           <div class="source-inputs">
-            <label class="file-upload-btn">
-              <app-icon [icon]="icons.plus" [size]="14" /> Seleziona file
+            <label class="file-upload-btn" [class.disabled]="fileUploading()">
+              <app-icon [icon]="icons.plus" [size]="14" />
+              {{ fileUploading() ? 'Caricamento...' : 'Seleziona file' }}
               <input type="file" (change)="onFileSelected($event)"
-                     accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.txt,.json" hidden />
+                     accept=".pdf,.csv,.txt,.json,.md" hidden [disabled]="fileUploading()" />
             </label>
-            <span class="file-hint">PDF, Excel, CSV, Word, TXT, JSON</span>
+            <span class="file-hint">PDF, CSV, TXT, JSON, Markdown</span>
           </div>
         }
       </div>

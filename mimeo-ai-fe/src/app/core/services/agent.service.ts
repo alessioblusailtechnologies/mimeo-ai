@@ -8,8 +8,9 @@ export type PlatformType = 'linkedin' | 'blog' | 'generic';
 
 export interface AgentSource {
   type: AgentSourceType;
-  value: string;        // URL or filename
+  value: string;        // URL or storage URL
   label?: string;       // optional display name
+  content?: string;     // extracted text content (for file sources)
 }
 
 export interface Agent {
@@ -95,6 +96,13 @@ export class AgentService {
 
   delete(wsId: string, id: string) {
     return this.http.delete(`${this.url(wsId)}/${id}`);
+  }
+
+  uploadSourceFile(wsId: string, fileBase64: string, fileName: string) {
+    return this.http.post<ApiResponse<{ url: string; extracted_text: string }>>(
+      `${this.url(wsId)}/upload-source-file`,
+      { file: fileBase64, file_name: fileName }
+    ).pipe(map(r => r.data));
   }
 
   uploadReferenceImage(wsId: string, imageBase64: string) {

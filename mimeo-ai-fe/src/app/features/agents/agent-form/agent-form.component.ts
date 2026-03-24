@@ -174,16 +174,36 @@ export class AgentFormComponent implements OnInit {
     this.sources.update(s => s.filter((_, i) => i !== index));
   }
 
+  fileUploading = signal(false);
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
-    this.sources.update(s => [...s, {
-      type: 'file' as AgentSourceType,
-      value: file.name,
-      label: file.name,
-    }]);
     input.value = '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      this.fileUploading.set(true);
+
+      this.agentService.uploadSourceFile(this.wsId, base64, file.name).subscribe({
+        next: result => {
+          this.sources.update(s => [...s, {
+            type: 'file' as AgentSourceType,
+            value: result.url,
+            label: file.name,
+            content: result.extracted_text,
+          }]);
+          this.fileUploading.set(false);
+        },
+        error: () => {
+          this.error.set('Errore nel caricamento del file');
+          this.fileUploading.set(false);
+        },
+      });
+    };
+    reader.readAsDataURL(file);
   }
 
   onReferenceImageSelected(event: Event) {

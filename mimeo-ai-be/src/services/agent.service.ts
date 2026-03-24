@@ -64,6 +64,56 @@ export async function deleteAgent(agentId: string, userId: string): Promise<void
   return agentRepo.remove(agentId, userId);
 }
 
+export async function uploadSourceFile(
+  base64File: string,
+  fileName: string,
+  userId: string
+): Promise<{ url: string; extracted_text: string }> {
+  const raw = base64File.replace(/^data:[^;]+;base64,/, '');
+  const buffer = Buffer.from(raw, 'base64');
+
+  const ext = (fileName.split('.').pop() || 'bin').toLowerCase();
+  const storageName = `${userId}/${randomUUID()}.${ext}`;
+
+  const contentTypeMap: Record<string, string> = {
+    pdf: 'application/pdf',
+    txt: 'text/plain',
+    md: 'text/markdown',
+    csv: 'text/csv',
+    json: 'application/json',
+  };
+  const contentType = contentTypeMap[ext] || 'application/octet-stream';
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('agent-sources')
+    .upload(storageName, buffer, { contentType, upsert: false });
+
+  if (uploadError) throw uploadError;
+
+  const { data: urlData } = supabaseAdmin.storage
+    .from('agent-sources')
+    .getPublicUrl(storageName);
+
+  // Extract text content from the file
+  let extractedText = '';
+  if (ext === 'pdf') {
+    const pdfParse = (await import('pdf-parse')).default;
+    const result = await pdfParse(buffer);
+    extractedText = result.text;
+  } else {
+    extractedText = buffer.toString('utf-8');
+  }
+
+  // Limit text to avoid oversized JSONB payloads
+  extractedText = extractedText
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n+/g, '\n\n')
+    .trim()
+    .slice(0, 10000);
+
+  return { url: urlData.publicUrl, extracted_text: extractedText };
+}
+
 export async function uploadAndAnalyzeReferenceImage(
   base64Image: string,
   userId: string

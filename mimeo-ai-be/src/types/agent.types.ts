@@ -7,6 +7,7 @@ export interface AgentSource {
   type: AgentSourceType;
   value: string;
   label?: string;
+  content?: string;  // extracted text content (for file sources)
 }
 
 export interface Agent {

@@ -35,10 +35,18 @@ async function fetchToneOfVoice(agent: Agent, userId: string) {
 // Keywords that indicate the brief wants current/real-time information
 const SEARCH_KEYWORDS = /\b(ultime notizie|notizie recenti|attualit[àa]|news|trending|latest|recent|current|oggi|questa settimana|questo mese|aggiornament[io]|novit[àa]|tendenz[ae]|trend)\b/i;
 
-async function enrichBriefWithReferences(brief: string, referenceUrls?: string[], agentSourceUrls?: string[]): Promise<string> {
+async function enrichBriefWithReferences(brief: string, referenceUrls?: string[], agentSourceUrls?: string[], fileContents?: string[]): Promise<string> {
   const parts: string[] = [];
 
-  // 1. Scrape explicit URLs from brief text, reference_urls param, and agent source URLs
+  // 1. Include file source content directly (already extracted at upload time)
+  if (fileContents && fileContents.length > 0) {
+    const fileParts = fileContents.map((content, i) =>
+      `--- Content from uploaded file ${i + 1} ---\n${content}\n--- End ---`
+    );
+    parts.push(`\n\nHere is reference content from uploaded files:\n\n${fileParts.join('\n\n')}`);
+  }
+
+  // 2. Scrape explicit URLs from brief text, reference_urls param, and agent source URLs
   const briefUrls = extractUrls(brief);
   const allUrls = [...new Set([...briefUrls, ...(referenceUrls || []), ...(agentSourceUrls || [])])];
 
@@ -48,7 +56,7 @@ async function enrichBriefWithReferences(brief: string, referenceUrls?: string[]
     if (formatted) parts.push(formatted);
   }
 
-  // 2. If the brief asks for current/latest info, do a web search
+  // 3. If the brief asks for current/latest info, do a web search
   if (SEARCH_KEYWORDS.test(brief)) {
     // Extract the core topic by removing common filler words
     const searchQuery = brief
@@ -64,11 +72,11 @@ async function enrichBriefWithReferences(brief: string, referenceUrls?: string[]
   return parts.join('');
 }
 
-function extractAgentSourceUrls(agent: Agent): string[] {
-  if (!agent.sources || agent.sources.length === 0) return [];
-  return agent.sources
-    .filter(s => s.type === 'url')
-    .map(s => s.value);
+function extractAgentSources(agent: Agent): { urls: string[]; fileContents: string[] } {
+  if (!agent.sources || agent.sources.length === 0) return { urls: [], fileContents: [] };
+  const urls = agent.sources.filter(s => s.type === 'url').map(s => s.value);
+  const fileContents = agent.sources.filter(s => s.type === 'file' && s.content).map(s => s.content!);
+  return { urls, fileContents };
 }
 
 export async function generateDraft(
@@ -82,8 +90,8 @@ export async function generateDraft(
   const systemPrompt = buildSystemPrompt(agent, tov);
 
   // Scrape any URLs found in the brief, reference_urls, or agent sources
-  const agentSourceUrls = extractAgentSourceUrls(agent);
-  const referenceContent = await enrichBriefWithReferences(dto.brief, dto.reference_urls, agentSourceUrls);
+  const { urls: agentSourceUrls, fileContents } = extractAgentSources(agent);
+  const referenceContent = await enrichBriefWithReferences(dto.brief, dto.reference_urls, agentSourceUrls, fileContents);
   const userPrompt = buildUserPrompt(dto.brief, referenceContent || undefined, agent.platform_type);
 
   const aiProvider = getAiProvider(agent.ai_provider);
@@ -157,8 +165,8 @@ export async function regenerate(
   const systemPrompt = buildSystemPrompt(agent, tov);
 
   // Scrape any URLs found in the original brief + agent sources
-  const agentSourceUrls = extractAgentSourceUrls(agent);
-  const referenceContent = await enrichBriefWithReferences(post.original_brief, undefined, agentSourceUrls);
+  const { urls: agentSourceUrls, fileContents } = extractAgentSources(agent);
+  const referenceContent = await enrichBriefWithReferences(post.original_brief, undefined, agentSourceUrls, fileContents);
   const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined, agent.platform_type, userFeedback);
 
   const aiProvider = getAiProvider(agent.ai_provider);

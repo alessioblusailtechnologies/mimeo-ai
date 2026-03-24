@@ -77,23 +77,17 @@
 /* Typing animation — each card reveals text at different speeds */
 .typing {
   display: inline;
-  border-right: 2px solid var(--accent);
-  animation: blink .8s step-end infinite;
 }
 
-.t1 { animation: typeReveal 6s steps(40) 0s both, blink .8s step-end infinite; }
-.t2 { animation: typeReveal 7s steps(40) 2s both, blink .8s step-end infinite; }
-.t3 { animation: typeReveal 5s steps(40) 4s both, blink .8s step-end infinite; }
-.t4 { animation: typeReveal 8s steps(40) 1s both, blink .8s step-end infinite; }
-.t5 { animation: typeReveal 6s steps(40) 3s both, blink .8s step-end infinite; }
+.t1 { animation: typeReveal 6s steps(40) 0s both; }
+.t2 { animation: typeReveal 7s steps(40) 2s both; }
+.t3 { animation: typeReveal 5s steps(40) 4s both; }
+.t4 { animation: typeReveal 8s steps(40) 1s both; }
+.t5 { animation: typeReveal 6s steps(40) 3s both; }
 
 @keyframes typeReveal {
   from { max-width: 0; }
   to   { max-width: 600px; }
-}
-
-@keyframes blink {
-  50% { border-color: transparent; }
 }
 
 /* Overlay gradient to fade cards behind the form */

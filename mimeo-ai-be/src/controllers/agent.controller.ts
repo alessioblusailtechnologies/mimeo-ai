@@ -45,6 +45,20 @@ export async function remove(req: Request<{ wsId: string; id: string }>, res: Re
   } catch (err) { next(err); }
 }
 
+export async function uploadSourceFile(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { file, file_name } = req.body;
+    if (!file || typeof file !== 'string') {
+      throw new BadRequestError('file (base64) is required');
+    }
+    if (!file_name || typeof file_name !== 'string') {
+      throw new BadRequestError('file_name is required');
+    }
+    const result = await agentService.uploadSourceFile(file, file_name, req.user!.id);
+    sendSuccess(res, result);
+  } catch (err) { next(err); }
+}
+
 export async function uploadReferenceImage(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
   try {
     const { image } = req.body;

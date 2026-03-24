@@ -100,7 +100,8 @@ export async function uploadSourceFile(
     const { PDFParse } = await import('pdf-parse');
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     await parser.load();
-    extractedText = await parser.getText();
+    const result = await parser.getText();
+    extractedText = result.text;
   } else {
     extractedText = buffer.toString('utf-8');
   }

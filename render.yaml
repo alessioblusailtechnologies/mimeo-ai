@@ -44,15 +44,9 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist/mimeo-ai-fe/browser
     headers:
-      - path: /index.html
+      - path: /*
         name: Cache-Control
         value: no-cache, no-store, must-revalidate
-      - path: /favicon.svg
-        name: Cache-Control
-        value: no-cache
-      - path: /favicon.ico
-        name: Cache-Control
-        value: no-cache
       - path: "/*.js"
         name: Cache-Control
         value: public, max-age=31536000, immutable

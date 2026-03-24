@@ -97,7 +97,8 @@ export async function uploadSourceFile(
   // Extract text content from the file
   let extractedText = '';
   if (ext === 'pdf') {
-    const pdfParse = (await import('pdf-parse')).default;
+    const pdfModule = await import('pdf-parse');
+    const pdfParse = pdfModule.default ?? pdfModule;
     const result = await pdfParse(buffer);
     extractedText = result.text;
   } else {

@@ -4,6 +4,7 @@ const agentSourceSchema = z.object({
   type: z.enum(['url', 'file']),
   value: z.string().min(1).max(2000),
   label: z.string().max(200).optional(),
+  content: z.string().max(15000).optional(),
 });
 
 export const createAgentSchema = z.object({

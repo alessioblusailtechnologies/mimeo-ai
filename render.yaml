@@ -1,0 +1,55 @@
+services:
+  # ── Backend API (Node.js / Express) ──────────────────────────────
+  - type: web
+    name: mimeo-api
+    runtime: node
+    region: frankfurt
+    plan: starter
+    rootDir: mimeo-ai-be
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: "https://mimeo-app.onrender.com"
+      - key: LINKEDIN_CLIENT_ID
+        sync: false
+      - key: LINKEDIN_CLIENT_SECRET
+        sync: false
+      - key: LINKEDIN_REDIRECT_URI
+        sync: false
+
+  # ── Frontend (Angular — static site) ────────────────────────────
+  - type: web
+    name: mimeo-app
+    runtime: static
+    rootDir: mimeo-ai-fe
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/mimeo-ai-fe/browser
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://mimeo-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

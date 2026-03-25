@@ -28,7 +28,7 @@
                 @if (msg.role === 'assistant') {
                   <div class="msg-avatar">M</div>
                 }
-                <div class="msg-bubble" [innerHTML]="msg.content | markdown"></div>
+                <div class="msg-bubble"><markdown [data]="msg.content"></markdown></div>
               </div>
             }
           </div>
@@ -38,7 +38,7 @@
       @if (activeTab() === 'prompt') {
         <div class="prompt-section">
           <div class="prompt-label">System Prompt Fragment</div>
-          <div class="prompt-content" [innerHTML]="tov.system_prompt_fragment | markdown"></div>
+          <div class="prompt-content"><markdown [data]="tov.system_prompt_fragment"></markdown></div>
         </div>
 
         @if (tov.example_posts && tov.example_posts.length > 0) {

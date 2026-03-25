@@ -46,9 +46,11 @@ export function buildSystemPrompt(agent: Agent, toneOfVoice?: ToneOfVoice | null
       '- Do NOT use markdown syntax (no #, **, _, ```, etc.) — LinkedIn does not render markdown.\n' +
       '- Use line breaks generously to create visual breathing room.\n' +
       '- Emojis are allowed if they fit the tone, but use them sparingly.\n' +
-      '- Do NOT use horizontal rules, dividers, or separator lines.',
-    blog: 'Generate a blog post. Use markdown formatting: headings (##, ###), bold (**text**), bullet lists (- item), and paragraphs for readability. Aim for 500-1500 words depending on the topic depth.',
-    generic: 'Generate a social media post. Use appropriate formatting for the platform. Keep it engaging and well-structured. For lists use "•" bullet points, not dashes.',
+      '- Do NOT use horizontal rules, dividers, or separator lines (never use "---" or "***").',
+    blog: 'Generate a blog post. Use markdown formatting: headings (##, ###), bold (**text**), bullet lists (- item), and paragraphs for readability. Aim for 500-1500 words depending on the topic depth.\n' +
+      'NEVER use horizontal rules or separators ("---", "***", "___") in the output.',
+    generic: 'Generate a social media post. Use appropriate formatting for the platform. Keep it engaging and well-structured. For lists use "•" bullet points, not dashes.\n' +
+      'NEVER use horizontal rules or separators ("---", "***", "___") in the output.',
   };
 
   parts.push(platformInstructions[agent.platform_type] || platformInstructions.linkedin);

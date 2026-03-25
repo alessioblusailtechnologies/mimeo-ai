@@ -26,7 +26,7 @@
               @if (msg.role === 'assistant') {
                 <div class="msg-avatar">M</div>
               }
-              <div class="msg-bubble" [innerHTML]="msg.content | markdown"></div>
+              <div class="msg-bubble"><markdown [data]="msg.content"></markdown></div>
             </div>
           }
 

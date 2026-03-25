@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, signal, computed, ViewChild, El
 import { FormsModule } from '@angular/forms';
 import { ToneOfVoiceService, ToneOfVoice, TovChatMessage, TovChatResponse } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
+import { MarkdownComponent } from 'ngx-markdown';
 import {
   Cancel01Icon,
   SparklesIcon,
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-tov-chat-modal',
   standalone: true,
-  imports: [FormsModule, IconComponent, MarkdownPipe],
+  imports: [FormsModule, IconComponent, MarkdownComponent],
   templateUrl: './tov-chat-modal.component.html',
   styleUrl: './tov-chat-modal.component.scss',
 })

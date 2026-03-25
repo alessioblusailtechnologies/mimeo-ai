@@ -123,7 +123,7 @@
                   </div>
                 </div>
               } @else {
-                <div class="post-content" [innerHTML]="ver.is_selected ? post.content : ver.content | markdown"></div>
+                <div class="post-content"><markdown [data]="ver.is_selected ? post.content : ver.content"></markdown></div>
               }
             </div>
           }
@@ -155,7 +155,7 @@
             </div>
           </div>
         } @else {
-          <div class="post-content" [innerHTML]="post.content | markdown"></div>
+          <div class="post-content"><markdown [data]="post.content"></markdown></div>
         }
       }
     </div>
@@ -260,7 +260,7 @@
                   </button>
                 }
               </div>
-              <div class="gen-content" [innerHTML]="gen.content | markdown"></div>
+              <div class="gen-content"><markdown [data]="gen.content"></markdown></div>
               @if (gen.prompt_tokens || gen.completion_tokens) {
                 <div class="gen-stats">
                   <span>Tokens: {{ gen.prompt_tokens }} in / {{ gen.completion_tokens }} out</span>

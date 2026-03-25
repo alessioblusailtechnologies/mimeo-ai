@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { ToneOfVoice, TovChatMessage } from '../../../core/services/tone-of-voice.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
+import { MarkdownComponent } from 'ngx-markdown';
 import { Cancel01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-tov-detail-modal',
   standalone: true,
-  imports: [IconComponent, MarkdownPipe],
+  imports: [IconComponent, MarkdownComponent],
   templateUrl: './tov-detail-modal.component.html',
   styleUrl: './tov-detail-modal.component.scss',
 })

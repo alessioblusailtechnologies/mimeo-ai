@@ -233,31 +233,33 @@
   line-height: 1.7;
   color: var(--text-2);
 
-  p { margin: 0 0 12px; &:last-child { margin-bottom: 0; } }
-  h1, h2, h3, h4 { color: var(--text-1); margin: 16px 0 8px; &:first-child { margin-top: 0; } }
-  h1 { font-size: 18px; }
-  h2 { font-size: 16px; }
-  h3 { font-size: 14px; }
-  strong { color: var(--text-1); }
-  em { font-style: italic; }
-  ul, ol { margin: 8px 0; padding-left: 20px; }
-  li { margin-bottom: 4px; }
-  blockquote {
-    margin: 8px 0;
-    padding: 8px 12px;
-    border-left: 3px solid var(--accent);
-    background: var(--bg-0);
-    border-radius: var(--radius-sm);
-    color: var(--text-3);
+  ::ng-deep {
+    p { margin: 0 0 12px; &:last-child { margin-bottom: 0; } }
+    h1, h2, h3, h4 { color: var(--text-1); margin: 16px 0 8px; &:first-child { margin-top: 0; } }
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+    strong { color: var(--text-1); }
+    em { font-style: italic; }
+    ul, ol { margin: 8px 0; padding-left: 24px; }
+    li { margin-bottom: 4px; }
+    blockquote {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-left: 3px solid var(--accent);
+      background: var(--bg-0);
+      border-radius: var(--radius-sm);
+      color: var(--text-3);
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--bg-0);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    a { color: var(--accent-l); text-decoration: underline; }
   }
-  code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    background: var(--bg-0);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
-  a { color: var(--accent-l); text-decoration: underline; }
 }
 
 // Edit area
@@ -445,10 +447,12 @@
   max-height: 200px;
   overflow-y: auto;
 
-  p { margin: 0 0 8px; &:last-child { margin-bottom: 0; } }
-  strong { color: var(--text-1); }
-  ul, ol { margin: 4px 0; padding-left: 18px; }
-  li { margin-bottom: 2px; }
+  ::ng-deep {
+    p { margin: 0 0 8px; &:last-child { margin-bottom: 0; } }
+    strong { color: var(--text-1); }
+    ul, ol { margin: 4px 0; padding-left: 24px; }
+    li { margin-bottom: 2px; }
+  }
 }
 
 .gen-stats {

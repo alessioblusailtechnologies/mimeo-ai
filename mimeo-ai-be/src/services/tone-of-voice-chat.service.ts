@@ -48,7 +48,6 @@ Quando hai raccolto abbastanza informazioni (dopo almeno 3 domande), PRIMA di ge
 
 [Genera qui un testo di esempio di 150-200 parole che dimostri concretamente il tone of voice rilevato. Deve sembrare realistico e autentico.]
 
----
 *Ti rispecchia? Conferma se sei soddisfatto, oppure dimmi cosa vorresti cambiare (es. "troppo formale", "più umorismo", "meno emoji").*
 
 NON generare il JSON in questa fase. Aspetta la conferma dell'utente.
@@ -84,7 +83,8 @@ Regole importanti:
 - Il system_prompt_fragment deve essere MOLTO dettagliato e specifico, come un vero brief creativo
 - Il campo example_posts deve contenere i post di esempio che l'utente ha condiviso (testo completo, non riassunti). Se l'utente non ha fornito esempi, usa un array vuoto []
 - Il JSON deve essere valido e racchiuso tra i marker \`\`\`json \`\`\`
-- Non spiegare cosa stai per fare, fai semplicemente la prossima domanda`;
+- Non spiegare cosa stai per fare, fai semplicemente la prossima domanda
+- NON usare MAI separatori orizzontali come "---", "***" o "___" nelle tue risposte o nel system_prompt_fragment generato`;
 }
 
 const CHAT_MODEL = 'claude-opus-4-6';

@@ -7,11 +7,11 @@ import { PostService, Post, Generation, PostImage } from '../../../core/services
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { LinkedInService, LinkedInConnectionInfo } from '../../../core/services/linkedin.service';
-import { MarkdownPipe } from '../../../shared/pipes/markdown.pipe';
+import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
   selector: 'app-post-detail',
-  imports: [FormsModule, DatePipe, RouterLink, MarkdownPipe],
+  imports: [FormsModule, DatePipe, RouterLink, MarkdownComponent],
   templateUrl: './post-detail.component.html',
   styleUrl: './post-detail.component.scss'
 })

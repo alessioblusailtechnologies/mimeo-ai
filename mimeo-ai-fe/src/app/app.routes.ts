@@ -12,6 +12,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
+    path: 'email-confirmed',
+    loadComponent: () => import('./features/auth/email-confirmed/email-confirmed.component').then(m => m.EmailConfirmedComponent),
+  },
+  {
     path: 'linkedin/callback',
     canActivate: [authGuard],
     loadComponent: () => import('./features/workspaces/linkedin-callback/linkedin-callback.component').then(m => m.LinkedInCallbackComponent),

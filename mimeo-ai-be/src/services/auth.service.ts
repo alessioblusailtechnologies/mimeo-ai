@@ -1,5 +1,6 @@
 import { supabaseClient, supabaseAdmin } from '../config/supabase.js';
 import { BadRequestError } from '../utils/api-error.js';
+import { config } from '../config/index.js';
 import type { RegisterDto, LoginDto, UpdateProfileDto, Profile } from '../types/auth.types.js';
 
 export async function register(dto: RegisterDto) {
@@ -8,10 +9,14 @@ export async function register(dto: RegisterDto) {
     password: dto.password,
     options: {
       data: { full_name: dto.full_name },
+      emailRedirectTo: `${config.cors.origin}/email-confirmed`,
     },
   });
 
-  if (error) throw new BadRequestError(error.message);
+  if (error) {
+    console.error('[register] Supabase signUp error:', JSON.stringify(error, null, 2));
+    throw new BadRequestError(error.message);
+  }
   return data;
 }
 

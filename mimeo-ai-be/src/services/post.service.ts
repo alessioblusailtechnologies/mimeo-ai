@@ -105,6 +105,7 @@ export async function generateDraft(
         userPrompt,
         model: agent.ai_model,
         temperature: versionsCount > 1 ? 0.7 + i * 0.1 : undefined,
+        maxTokens: 4096,
       })
     )
   );
@@ -175,6 +176,7 @@ export async function regenerate(
     userPrompt,
     model: agent.ai_model,
     temperature: 0.9,
+    maxTokens: 4096,
   });
 
   const generation = await generationRepo.create({

@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { tap, Observable, Subject, switchMap, catchError, EMPTY } from 'rxjs';
+import { tap, Observable, catchError, EMPTY, share } from 'rxjs';
 
 interface AuthSession {
   access_token: string;
@@ -39,8 +39,8 @@ export class AuthService {
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
 
-  private _refreshing = false;
-  private _refreshSubject = new Subject<string>();
+  /** Shared in-flight refresh observable — all concurrent 401s reuse this */
+  private _refresh$: Observable<string> | null = null;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -69,6 +69,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     this._token.set(null);
     this._user.set(null);
+    this._refresh$ = null;
     this.router.navigate(['/login']);
   }
 
@@ -76,52 +77,56 @@ export class AuthService {
     return this._token();
   }
 
+  get isRefreshing(): boolean {
+    return this._refresh$ !== null;
+  }
+
   /**
-   * Attempts to refresh the access token using the stored refresh_token.
-   * Returns an observable that emits the new access token.
-   * Coalesces concurrent refresh attempts into a single request.
+   * Refreshes the access token. All concurrent callers share the same
+   * in-flight HTTP request and all receive the new token.
    */
   refreshToken(): Observable<string> {
-    if (this._refreshing) {
-      return this._refreshSubject.asObservable();
+    if (this._refresh$) {
+      return this._refresh$;
     }
 
-    this._refreshing = true;
     const refreshToken = localStorage.getItem('refresh_token');
-
     if (!refreshToken) {
-      this._refreshing = false;
       this.logout();
       return EMPTY;
     }
 
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, {
-      refresh_token: refreshToken
-    }).pipe(
-      tap(res => {
-        const session = res.data?.session;
-        if (session) {
-          localStorage.setItem('access_token', session.access_token);
-          localStorage.setItem('refresh_token', session.refresh_token);
-          this._token.set(session.access_token);
-          this._refreshSubject.next(session.access_token);
+    this._refresh$ = new Observable<string>(subscriber => {
+      this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, {
+        refresh_token: refreshToken
+      }).subscribe({
+        next: res => {
+          const session = res.data?.session;
+          if (session) {
+            localStorage.setItem('access_token', session.access_token);
+            localStorage.setItem('refresh_token', session.refresh_token);
+            this._token.set(session.access_token);
+            subscriber.next(session.access_token);
+            subscriber.complete();
+          } else {
+            subscriber.error(new Error('No session returned'));
+          }
+        },
+        error: err => {
+          this._refresh$ = null;
+          this.logout();
+          subscriber.error(err);
+        },
+        complete: () => {
+          this._refresh$ = null;
         }
-        this._refreshing = false;
-      }),
-      catchError(() => {
-        this._refreshing = false;
-        this.logout();
-        return EMPTY;
-      }),
-      switchMap(() => {
-        const token = this._token();
-        return token ? new Observable<string>(sub => { sub.next(token); sub.complete(); }) : EMPTY;
-      })
+      });
+    }).pipe(
+      share()  // multicast: all concurrent subscribers share the same execution
     );
-  }
 
-  get isRefreshing() { return this._refreshing; }
-  get refreshSubject$() { return this._refreshSubject.asObservable(); }
+    return this._refresh$;
+  }
 
   private handleAuth(res: AuthResponse) {
     const session = res.data?.session;

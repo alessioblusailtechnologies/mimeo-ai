@@ -3,6 +3,8 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { catchError, switchMap, throwError } from 'rxjs';
 
+const SKIP_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh'];
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
@@ -15,22 +17,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status !== 401 || req.url.includes('/auth/login') || req.url.includes('/auth/register') || req.url.includes('/auth/refresh')) {
+      // Only intercept 401s, skip auth endpoints to avoid infinite loops
+      if (error.status !== 401 || SKIP_REFRESH_URLS.some(url => req.url.includes(url))) {
         return throwError(() => error);
       }
 
-      if (authService.isRefreshing) {
-        return authService.refreshSubject$.pipe(
-          switchMap(newToken => next(req.clone({
-            setHeaders: { Authorization: `Bearer ${newToken}` },
-          })))
-        );
-      }
-
+      // All concurrent 401s share the same refresh call
       return authService.refreshToken().pipe(
         switchMap(newToken => next(req.clone({
           setHeaders: { Authorization: `Bearer ${newToken}` },
-        })))
+        }))),
+        catchError(refreshError => throwError(() => refreshError))
       );
     })
   );

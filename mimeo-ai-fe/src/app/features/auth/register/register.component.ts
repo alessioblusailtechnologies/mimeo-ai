@@ -28,7 +28,7 @@ export class RegisterComponent {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.error.set(err.error?.error || 'Registration failed');
+        this.error.set(err.error?.error || 'Registrazione fallita');
         this.loading.set(false);
       },
     });

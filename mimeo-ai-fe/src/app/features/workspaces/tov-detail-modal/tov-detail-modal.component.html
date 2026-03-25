@@ -37,7 +37,7 @@
 
       @if (activeTab() === 'prompt') {
         <div class="prompt-section">
-          <div class="prompt-label">System Prompt Fragment</div>
+          <div class="prompt-label">Frammento del prompt di sistema</div>
           <div class="prompt-content"><markdown [data]="tov.system_prompt_fragment"></markdown></div>
         </div>
 
@@ -55,7 +55,7 @@
 
         @if (tov.style_profile; as sp) {
           <div class="prompt-section">
-            <div class="prompt-label">Style Profile</div>
+            <div class="prompt-label">Profilo di stile</div>
             <div class="style-tags">
               @for (entry of styleEntries(sp); track entry[0]) {
                 <div class="style-row">

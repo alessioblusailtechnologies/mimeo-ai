@@ -60,7 +60,7 @@ export class PostGenerateComponent implements OnInit {
         this.router.navigate(['/workspaces', this.wsId, 'posts', result.post.id]);
       },
       error: (err) => {
-        this.error.set(err.error?.error || 'Generation failed');
+        this.error.set(err.error?.error || 'Generazione fallita');
         this.loading.set(false);
       },
     });

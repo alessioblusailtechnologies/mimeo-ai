@@ -224,7 +224,7 @@
         </div>
 
         <div class="field">
-          <label for="image_prompt">Image Prompt</label>
+          <label for="image_prompt">Prompt immagine</label>
           <textarea id="image_prompt" [(ngModel)]="form.image_prompt" name="image_prompt"
                     rows="3"
                     placeholder="Es: Crea un'immagine professionale e moderna che rappresenti il concetto del post..."></textarea>
@@ -246,10 +246,10 @@
     </div>
 
     <div class="field">
-      <label for="brief">Brief / Topic</label>
+      <label for="brief">Brief / Argomento</label>
       <textarea id="brief" [(ngModel)]="scheduleBrief" name="schedule_brief"
-                rows="3" placeholder="Describe what the agent should write about when triggered..." required></textarea>
-      <span class="field-hint">This is the topic/instructions the agent will use to generate content.</span>
+                rows="3" placeholder="Descrivi di cosa l'agente dovrebbe scrivere quando viene attivato..." required></textarea>
+      <span class="field-hint">Questo è l'argomento/le istruzioni che l'agente userà per generare contenuti.</span>
     </div>
 
     <div class="form-actions">

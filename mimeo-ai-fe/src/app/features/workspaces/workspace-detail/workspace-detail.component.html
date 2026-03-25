@@ -41,10 +41,10 @@
             </div>
             <div class="toolbar-r">
               <div class="view-toggle">
-                <button [class.active]="agentView() === 'list'" (click)="agentView.set('list')" title="List view">
+                <button [class.active]="agentView() === 'list'" (click)="agentView.set('list')" title="Vista lista">
                   <app-icon [icon]="icons.listView" [size]="16" />
                 </button>
-                <button [class.active]="agentView() === 'card'" (click)="agentView.set('card')" title="Card view">
+                <button [class.active]="agentView() === 'card'" (click)="agentView.set('card')" title="Vista card">
                   <app-icon [icon]="icons.gridView" [size]="16" />
                 </button>
               </div>
@@ -134,7 +134,7 @@
             <div class="breadcrumb">
               <span>{{ ws.name }}</span>
               <span class="sep">/</span>
-              <span class="current">Contents</span>
+              <span class="current">Contenuti</span>
             </div>
           </div>
           <div class="toolbar-r">
@@ -145,10 +145,10 @@
               <button class="filter-btn" [class.active]="activeFilter() === 'published'" (click)="filterBy('published')">Pubblicati</button>
             </div>
             <div class="view-toggle">
-              <button [class.active]="contentView() === 'list'" (click)="contentView.set('list')" title="List view">
+              <button [class.active]="contentView() === 'list'" (click)="contentView.set('list')" title="Vista lista">
                 <app-icon [icon]="icons.listView" [size]="16" />
               </button>
-              <button [class.active]="contentView() === 'card'" (click)="contentView.set('card')" title="Card view">
+              <button [class.active]="contentView() === 'card'" (click)="contentView.set('card')" title="Vista card">
                 <app-icon [icon]="icons.gridView" [size]="16" />
               </button>
             </div>
@@ -279,7 +279,7 @@
             <div class="breadcrumb">
               <span>{{ ws.name }}</span>
               <span class="sep">/</span>
-              <span class="current">Integrations</span>
+              <span class="current">Integrazioni</span>
             </div>
           </div>
         </div>

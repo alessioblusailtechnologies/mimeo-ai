@@ -27,7 +27,7 @@ export class LoginComponent {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.error.set(err.error?.error || 'Login failed');
+        this.error.set(err.error?.error || 'Accesso fallito');
         this.loading.set(false);
       },
     });

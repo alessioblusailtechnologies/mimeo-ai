@@ -1,13 +1,13 @@
 <div class="page">
   <div class="page-header">
-    <button class="btn-back" (click)="goBack()">&larr; Back to Contents</button>
-    <h2>Generate LinkedIn Post</h2>
+    <button class="btn-back" (click)="goBack()">&larr; Torna ai contenuti</button>
+    <h2>Genera post LinkedIn</h2>
   </div>
 
   @if (agents().length === 0) {
     <div class="empty-state">
-      <p>You need at least one agent to generate posts.</p>
-      <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn-primary">Create Agent</a>
+      <p>Devi avere almeno un agente per generare post.</p>
+      <a [routerLink]="['/workspaces', wsId, 'agents', 'new']" class="btn-primary">Crea Agent</a>
     </div>
   } @else {
     @if (error()) {
@@ -16,7 +16,7 @@
 
     <form class="form-card" (ngSubmit)="onSubmit()">
       <div class="field">
-        <label for="agent">Select Agent</label>
+        <label for="agent">Seleziona Agent</label>
         <select id="agent" [(ngModel)]="selectedAgentId" name="agent">
           @for (agent of agents(); track agent.id) {
             <option [value]="agent.id">{{ agent.name }} ({{ agent.ai_provider }} / {{ agent.tone }})</option>
@@ -26,33 +26,33 @@
 
       @if (selectedAgent; as agent) {
         <div class="agent-preview">
-          <span class="preview-label">Agent config:</span>
-          <span>{{ agent.tone }} tone</span>
+          <span class="preview-label">Configurazione agent:</span>
+          <span>{{ agent.tone }} tono</span>
           <span>{{ agent.ai_provider }} / {{ agent.ai_model }}</span>
           @if (agent.target_audience) {
-            <span>Audience: {{ agent.target_audience }}</span>
+            <span>Pubblico: {{ agent.target_audience }}</span>
           }
         </div>
       }
 
       <div class="field">
-        <label for="title">Title (optional)</label>
+        <label for="title">Titolo (opzionale)</label>
         <input id="title" type="text" [(ngModel)]="title" name="title"
-               placeholder="e.g. My take on AI in 2025">
+               placeholder="es. La mia opinione sull'AI nel 2025">
       </div>
 
       <div class="field">
-        <label for="brief">Brief / Topic</label>
+        <label for="brief">Brief / Argomento</label>
         <textarea id="brief" [(ngModel)]="brief" name="brief" rows="5" required
-                  placeholder="Describe what you want to write about. Be specific about the key points, angle, or message you want to convey..."></textarea>
+                  placeholder="Descrivi di cosa vuoi scrivere. Sii specifico sui punti chiave, l'angolo o il messaggio che vuoi trasmettere..."></textarea>
         <span class="char-count">{{ brief.length }} / 5000</span>
       </div>
 
       <button type="submit" class="btn-generate" [disabled]="loading() || !brief.trim() || !selectedAgentId">
         @if (loading()) {
-          <span class="spinner"></span> Generating...
+          <span class="spinner"></span> Generazione in corso...
         } @else {
-          Generate Post
+          Genera post
         }
       </button>
     </form>

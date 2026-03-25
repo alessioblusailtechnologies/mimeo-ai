@@ -3,7 +3,7 @@
     <div class="breadcrumb">
       <a [routerLink]="['/workspaces', wsId, 'contents']">{{ workspaceName() }}</a>
       <span class="sep">/</span>
-      <a [routerLink]="['/workspaces', wsId, 'contents']">Contents</a>
+      <a [routerLink]="['/workspaces', wsId, 'contents']">Contenuti</a>
       <span class="sep">/</span>
       <span class="current">{{ post.title || 'Post' }}</span>
     </div>
@@ -15,20 +15,20 @@
             {{ showFeedbackInput() ? 'Annulla' : 'Rigenera' }}
           </button>
           <button class="btn-primary" (click)="approve()" [disabled]="actionLoading() === 'approve'">
-            {{ actionLoading() === 'approve' ? 'Approving...' : 'Approve' }}
+            {{ actionLoading() === 'approve' ? 'Approvazione...' : 'Approva' }}
           </button>
         }
         @if (post.status === 'approved') {
           <button class="btn-publish" (click)="publish()" [disabled]="actionLoading() === 'publish'">
             @if (linkedInConnection()) {
-              {{ actionLoading() === 'publish' ? 'Publishing to LinkedIn...' : 'Publish to LinkedIn' }}
+              {{ actionLoading() === 'publish' ? 'Pubblicazione su LinkedIn...' : 'Pubblica su LinkedIn' }}
             } @else {
-              {{ actionLoading() === 'publish' ? 'Publishing...' : 'Publish' }}
+              {{ actionLoading() === 'publish' ? 'Pubblicazione...' : 'Pubblica' }}
             }
           </button>
         }
         <button class="btn-copy" (click)="copyToClipboard()">
-          {{ copied() ? 'Copied!' : 'Copy Text' }}
+          {{ copied() ? 'Copiato!' : 'Copia testo' }}
         </button>
       </div>
     </div>
@@ -47,14 +47,14 @@
 
     <div class="post-info">
       <span class="status-badge" [class]="'status-' + post.status">{{ post.status }}</span>
-      <span class="date">Created {{ post.created_at | date:'medium' }}</span>
+      <span class="date">Creato il {{ post.created_at | date:'medium' }}</span>
       @if (post.published_at) {
-        <span class="date">Published {{ post.published_at | date:'medium' }}</span>
+        <span class="date">Pubblicato il {{ post.published_at | date:'medium' }}</span>
       }
     </div>
 
     <div class="brief-section">
-      <span class="section-label">Original Brief</span>
+      <span class="section-label">Brief originale</span>
       <p>{{ post.original_brief }}</p>
     </div>
 
@@ -100,7 +100,7 @@
                     </button>
                   }
                   @if (ver.is_selected && post.status === 'draft' && !editing()) {
-                    <button class="btn-edit" (click)="startEdit()">Edit</button>
+                    <button class="btn-edit" (click)="startEdit()">Modifica</button>
                   }
                 </div>
               </div>
@@ -108,17 +108,17 @@
               @if (ver.is_selected && editing()) {
                 <div class="edit-area">
                   <div class="field">
-                    <label>Title (optional)</label>
-                    <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
+                    <label>Titolo (opzionale)</label>
+                    <input type="text" [(ngModel)]="editTitle" placeholder="Titolo del post">
                   </div>
                   <div class="field">
-                    <label>Content</label>
+                    <label>Contenuto</label>
                     <textarea [(ngModel)]="editContent" rows="12"></textarea>
                   </div>
                   <div class="edit-actions">
-                    <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+                    <button class="btn-secondary" (click)="cancelEdit()">Annulla</button>
                     <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
-                      {{ loading() ? 'Saving...' : 'Save' }}
+                      {{ loading() ? 'Salvando...' : 'Salva' }}
                     </button>
                   </div>
                 </div>
@@ -131,26 +131,26 @@
       } @else {
         <!-- Single version -->
         <div class="content-header">
-          <span class="section-label">Post Content</span>
+          <span class="section-label">Contenuto del post</span>
           @if (post.status === 'draft' && !editing()) {
-            <button class="btn-edit" (click)="startEdit()">Edit</button>
+            <button class="btn-edit" (click)="startEdit()">Modifica</button>
           }
         </div>
 
         @if (editing()) {
           <div class="edit-area">
             <div class="field">
-              <label>Title (optional)</label>
-              <input type="text" [(ngModel)]="editTitle" placeholder="Post title">
+              <label>Titolo (opzionale)</label>
+              <input type="text" [(ngModel)]="editTitle" placeholder="Titolo del post">
             </div>
             <div class="field">
-              <label>Content</label>
+              <label>Contenuto</label>
               <textarea [(ngModel)]="editContent" rows="12"></textarea>
             </div>
             <div class="edit-actions">
-              <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+              <button class="btn-secondary" (click)="cancelEdit()">Annulla</button>
               <button class="btn-primary" (click)="saveEdit()" [disabled]="loading()">
-                {{ loading() ? 'Saving...' : 'Save' }}
+                {{ loading() ? 'Salvando...' : 'Salva' }}
               </button>
             </div>
           </div>

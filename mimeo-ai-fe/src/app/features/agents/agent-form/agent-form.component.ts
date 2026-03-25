@@ -267,7 +267,7 @@ export class AgentFormComponent implements OnInit {
     req.subscribe({
       next: () => this.router.navigate(['/workspaces', this.wsId, 'agents']),
       error: (err) => {
-        this.error.set(err.error?.error || 'Failed to save agent');
+        this.error.set(err.error?.error || 'Errore nel salvataggio dell\'agente');
         this.loading.set(false);
       },
     });

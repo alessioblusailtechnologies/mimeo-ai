@@ -20,10 +20,10 @@ import { LogoComponent } from '../../../shared/components/logo/logo.component';
           </svg>
         </div>
 
-        <h2>Email confirmed</h2>
-        <p class="desc">Your email has been successfully verified. You can now log in to your account.</p>
+        <h2>Email confermata</h2>
+        <p class="desc">La tua email è stata verificata con successo. Ora puoi accedere al tuo account.</p>
 
-        <a routerLink="/login" class="btn-primary">Go to login</a>
+        <a routerLink="/login" class="btn-primary">Vai al login</a>
       </div>
     </div>
   `,

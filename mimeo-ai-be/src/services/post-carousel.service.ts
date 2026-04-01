@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '../config/supabase.js';
 import * as postRepo from '../repositories/post.repository.js';
@@ -86,10 +87,11 @@ export async function generateCarousel(
   // Count slides
   const slidesCount = (html.match(/<div\s+class=["']slide["']/g) || []).length;
 
-  // Convert HTML to PDF using Puppeteer
+  // Convert HTML to PDF using Puppeteer + @sparticuz/chromium
   const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   try {

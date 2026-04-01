@@ -16,6 +16,7 @@ export interface Post {
   original_brief: string;
   status: PostStatus;
   image_status: ImageStatus | null;
+  share_token: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -129,6 +130,24 @@ export class PostService {
   deleteImage(wsId: string, postId: string, imageId: string) {
     return this.http.delete<ApiResponse<{ deleted: boolean }>>(
       `${this.url(wsId)}/${postId}/images/${imageId}`
+    ).pipe(map(r => r.data));
+  }
+
+  enableShare(wsId: string, postId: string) {
+    return this.http.post<ApiResponse<Post>>(
+      `${this.url(wsId)}/${postId}/share`, {}
+    ).pipe(map(r => r.data));
+  }
+
+  disableShare(wsId: string, postId: string) {
+    return this.http.delete<ApiResponse<Post>>(
+      `${this.url(wsId)}/${postId}/share`
+    ).pipe(map(r => r.data));
+  }
+
+  getShared(shareToken: string) {
+    return this.http.get<ApiResponse<{ post: Post; images: PostImage[] }>>(
+      `${environment.apiUrl}/shared/posts/${shareToken}`
     ).pipe(map(r => r.data));
   }
 }

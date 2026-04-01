@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '../config/supabase.js';
 import { NotFoundError } from '../utils/api-error.js';
 import type { Post, PostStatus, ImageStatus } from '../types/post.types.js';
@@ -91,6 +92,46 @@ export async function updateStatus(
   const { data, error } = await supabaseAdmin
     .from('mimeo_posts')
     .update({ status, ...extra })
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error || !data) throw new NotFoundError('Post not found');
+  return data as Post;
+}
+
+export async function findByShareToken(shareToken: string): Promise<Post> {
+  const { data, error } = await supabaseAdmin
+    .from('mimeo_posts')
+    .select('*')
+    .eq('share_token', shareToken)
+    .single();
+
+  if (error || !data) throw new NotFoundError('Shared post not found');
+  return data as Post;
+}
+
+export async function enableShare(id: string, userId: string): Promise<Post> {
+  const post = await findById(id, userId);
+  if (post.share_token) return post;
+
+  const { data, error } = await supabaseAdmin
+    .from('mimeo_posts')
+    .update({ share_token: randomUUID() })
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error || !data) throw new NotFoundError('Post not found');
+  return data as Post;
+}
+
+export async function disableShare(id: string, userId: string): Promise<Post> {
+  const { data, error } = await supabaseAdmin
+    .from('mimeo_posts')
+    .update({ share_token: null })
     .eq('id', id)
     .eq('user_id', userId)
     .select()

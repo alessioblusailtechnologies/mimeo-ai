@@ -30,6 +30,9 @@
         <button class="btn-copy" (click)="copyToClipboard()">
           {{ copied() ? 'Copiato!' : 'Copia testo' }}
         </button>
+        <button class="btn-share" (click)="toggleShare()" [disabled]="actionLoading() === 'share'">
+          {{ post.share_token ? 'Link condivisione' : 'Condividi' }}
+        </button>
       </div>
     </div>
 
@@ -275,6 +278,26 @@
       </div>
     }
   </div>
+
+  <!-- Share Modal -->
+  @if (showShareModal()) {
+    <div class="modal-backdrop" (click)="showShareModal.set(false)">
+      <div class="share-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="showShareModal.set(false)">&times;</button>
+        <h3>Condividi post</h3>
+        <p class="share-desc">Chiunque abbia questo link potrà visualizzare il post (sola lettura).</p>
+        <div class="share-link-row">
+          <input type="text" class="share-link-input" [value]="shareUrl" readonly />
+          <button class="btn-copy-link" (click)="copyShareLink()">
+            {{ shareCopied() ? 'Copiato!' : 'Copia link' }}
+          </button>
+        </div>
+        <button class="btn-revoke" (click)="disableShare()" [disabled]="actionLoading() === 'share'">
+          Revoca condivisione
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Image Preview Modal -->
   @if (previewImage(); as preview) {

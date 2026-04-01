@@ -30,6 +30,10 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   showFeedbackInput = signal(false);
   feedbackText = '';
 
+  // Sharing
+  showShareModal = signal(false);
+  shareCopied = signal(false);
+
   // Image generation
   postImages = signal<PostImage[]>([]);
   showImageGen = signal(false);
@@ -290,6 +294,54 @@ export class PostDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.imagePolling$?.unsubscribe();
+  }
+
+  toggleShare() {
+    const p = this.post();
+    if (!p) return;
+
+    if (p.share_token) {
+      // Already shared — show modal
+      this.showShareModal.set(true);
+    } else {
+      // Enable sharing
+      this.actionLoading.set('share');
+      this.postService.enableShare(this.wsId, p.id).subscribe({
+        next: updated => {
+          this.post.set(updated);
+          this.actionLoading.set('');
+          this.showShareModal.set(true);
+        },
+        error: () => this.actionLoading.set(''),
+      });
+    }
+  }
+
+  disableShare() {
+    const p = this.post();
+    if (!p) return;
+    this.actionLoading.set('share');
+    this.postService.disableShare(this.wsId, p.id).subscribe({
+      next: updated => {
+        this.post.set(updated);
+        this.actionLoading.set('');
+        this.showShareModal.set(false);
+      },
+      error: () => this.actionLoading.set(''),
+    });
+  }
+
+  get shareUrl(): string {
+    const token = this.post()?.share_token;
+    if (!token) return '';
+    return `${window.location.origin}/shared/${token}`;
+  }
+
+  copyShareLink() {
+    navigator.clipboard.writeText(this.shareUrl).then(() => {
+      this.shareCopied.set(true);
+      setTimeout(() => this.shareCopied.set(false), 2000);
+    });
   }
 
   goBack() {

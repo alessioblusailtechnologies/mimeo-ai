@@ -255,6 +255,24 @@ export async function approveDraft(postId: string, userId: string): Promise<Post
   return postRepo.updateStatus(postId, 'approved', userId);
 }
 
+export async function enableShare(postId: string, userId: string): Promise<Post> {
+  return postRepo.enableShare(postId, userId);
+}
+
+export async function disableShare(postId: string, userId: string): Promise<Post> {
+  return postRepo.disableShare(postId, userId);
+}
+
+export async function getSharedPost(shareToken: string): Promise<{ post: Post; images: import('../types/post-image.types.js').PostImage[] }> {
+  const post = await postRepo.findByShareToken(shareToken);
+  const { data: images } = await (await import('../config/supabase.js')).supabaseAdmin
+    .from('mimeo_post_images')
+    .select('*')
+    .eq('post_id', post.id)
+    .order('created_at', { ascending: false });
+  return { post, images: (images || []) as import('../types/post-image.types.js').PostImage[] };
+}
+
 export async function publishPost(postId: string, userId: string): Promise<Post> {
   const post = await postRepo.findById(postId, userId);
   if (post.status !== 'approved') {

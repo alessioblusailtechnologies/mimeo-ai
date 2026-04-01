@@ -11,6 +11,7 @@ export interface Post {
   original_brief: string;
   status: PostStatus;
   image_status: ImageStatus | null;
+  share_token: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;

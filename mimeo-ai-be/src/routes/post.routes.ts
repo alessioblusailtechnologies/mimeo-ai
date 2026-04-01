@@ -21,5 +21,7 @@ router.post('/:id/images/regenerate', postController.regenerateImages);
 router.post('/:id/images/generate', postController.generateImages);
 router.get('/:id/images', postController.getImages);
 router.delete('/:id/images/:imgId', postController.deleteImage);
+router.post('/:id/share', postController.enableShare);
+router.delete('/:id/share', postController.disableShare);
 
 export default router;

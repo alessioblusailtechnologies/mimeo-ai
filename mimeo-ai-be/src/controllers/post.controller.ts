@@ -98,3 +98,24 @@ export async function deleteImage(req: Request<{ wsId: string; id: string; imgId
     sendSuccess(res, { deleted: true });
   } catch (err) { next(err); }
 }
+
+export async function enableShare(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.enableShare(req.params.id, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function disableShare(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const post = await postService.disableShare(req.params.id, req.user!.id);
+    sendSuccess(res, post);
+  } catch (err) { next(err); }
+}
+
+export async function getShared(req: Request<{ shareToken: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const result = await postService.getSharedPost(req.params.shareToken);
+    sendSuccess(res, result);
+  } catch (err) { next(err); }
+}

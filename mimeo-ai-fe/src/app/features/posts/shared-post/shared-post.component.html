@@ -1,0 +1,47 @@
+@if (error()) {
+  <div class="shared-page">
+    <div class="shared-error">
+      <h2>Post non trovato</h2>
+      <p>Questo link di condivisione non è valido o è stato revocato.</p>
+    </div>
+  </div>
+} @else if (post(); as post) {
+  <div class="shared-page">
+    <div class="shared-header">
+      <span class="shared-badge">Condiviso con Mimeo</span>
+    </div>
+
+    @if (post.title) {
+      <h1 class="shared-title">{{ post.title }}</h1>
+    }
+
+    <div class="shared-meta">
+      <span class="date">{{ post.created_at | date:'mediumDate' }}</span>
+    </div>
+
+    <div class="shared-content">
+      <markdown [data]="post.content"></markdown>
+    </div>
+
+    @if (images().length > 0) {
+      <div class="shared-images">
+        <div class="images-grid">
+          @for (img of images(); track img.id) {
+            <div class="image-card" (click)="previewImage.set(img)">
+              <img [src]="img.public_url" [alt]="img.prompt" loading="lazy" />
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (previewImage(); as preview) {
+    <div class="modal-backdrop" (click)="previewImage.set(null)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <img [src]="preview.public_url" [alt]="preview.prompt" />
+        <button class="modal-close" (click)="previewImage.set(null)">&times;</button>
+      </div>
+    </div>
+  }
+}

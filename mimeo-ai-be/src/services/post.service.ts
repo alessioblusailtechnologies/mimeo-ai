@@ -96,6 +96,7 @@ export async function generateDraft(
 
   const aiProvider = getAiProvider(agent.ai_provider);
   const versionsCount = Math.min(Math.max(agent.versions_count || 1, 1), 3);
+  const maxTokens = agent.platform_type === 'blog' ? 8192 : 4096;
 
   // Generate N versions in parallel
   const aiResponses = await Promise.all(
@@ -105,7 +106,7 @@ export async function generateDraft(
         userPrompt,
         model: agent.ai_model,
         temperature: versionsCount > 1 ? 0.7 + i * 0.1 : undefined,
-        maxTokens: 4096,
+        maxTokens,
       })
     )
   );
@@ -171,12 +172,13 @@ export async function regenerate(
   const userPrompt = buildUserPrompt(post.original_brief, referenceContent || undefined, agent.platform_type, userFeedback);
 
   const aiProvider = getAiProvider(agent.ai_provider);
+  const maxTokens = agent.platform_type === 'blog' ? 8192 : 4096;
   const aiResponse = await aiProvider.generate({
     systemPrompt,
     userPrompt,
     model: agent.ai_model,
     temperature: 0.9,
-    maxTokens: 4096,
+    maxTokens,
   });
 
   const generation = await generationRepo.create({

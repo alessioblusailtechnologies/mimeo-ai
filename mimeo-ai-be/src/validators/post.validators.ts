@@ -9,5 +9,5 @@ export const generateDraftSchema = z.object({
 
 export const updatePostSchema = z.object({
   title: z.string().max(200).optional(),
-  content: z.string().min(1).max(10000).optional(),
+  content: z.string().min(1).max(20000).optional(),
 });

@@ -6,7 +6,7 @@ services:
     region: frankfurt
     plan: starter
     rootDir: mimeo-ai-be
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install --include=dev && npx puppeteer browsers install chrome && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_VERSION

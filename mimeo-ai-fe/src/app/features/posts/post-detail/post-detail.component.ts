@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Subscription, interval, switchMap, forkJoin } from 'rxjs';
-import { PostService, Post, Generation, PostImage } from '../../../core/services/post.service';
+import { PostService, Post, Generation, PostImage, PostCarousel } from '../../../core/services/post.service';
 import { AgentService, Agent } from '../../../core/services/agent.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { LinkedInService, LinkedInConnectionInfo } from '../../../core/services/linkedin.service';
@@ -33,6 +33,17 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   // Sharing
   showShareModal = signal(false);
   shareCopied = signal(false);
+
+  // Carousel
+  postCarousels = signal<PostCarousel[]>([]);
+  carouselLoading = signal(false);
+  showCarouselGen = signal(false);
+  carouselPrompt = '';
+  showCarouselFeedback = signal(false);
+  carouselFeedbackText = '';
+  private carouselPolling$?: Subscription;
+
+  agentHasCarousel = computed(() => this.agent()?.carousel_enabled === true);
 
   // Image generation
   postImages = signal<PostImage[]>([]);
@@ -94,6 +105,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.loadPost(id);
     this.postService.getGenerations(this.wsId, id).subscribe(gens => this.generations.set(gens));
     this.postService.getImages(this.wsId, id).subscribe(imgs => this.postImages.set(imgs));
+    this.postService.getCarousels(this.wsId, id).subscribe(c => this.postCarousels.set(c));
     this.linkedInService.getConnection(this.wsId).subscribe({
       next: conn => this.linkedInConnection.set(conn),
       error: () => {},
@@ -108,6 +120,10 @@ export class PostDetailComponent implements OnInit, OnDestroy {
       // Start polling if images are being generated
       if (post.image_status === 'generating' && !this.imagePolling$) {
         this.startImagePolling(id);
+      }
+      // Start polling if carousel is being generated
+      if (post.carousel_status === 'generating' && !this.carouselPolling$) {
+        this.startCarouselPolling(id);
       }
       // Load agent to know versions_count
       if (post.agent_id) {
@@ -292,8 +308,80 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  private startCarouselPolling(postId: string) {
+    this.carouselPolling$ = interval(5000).pipe(
+      switchMap(() => this.postService.getById(this.wsId, postId))
+    ).subscribe({
+      next: post => {
+        this.post.set(post);
+        if (post.carousel_status !== 'generating') {
+          this.carouselPolling$?.unsubscribe();
+          this.carouselPolling$ = undefined;
+          if (post.carousel_status === 'completed') {
+            this.postService.getCarousels(this.wsId, postId).subscribe(c => this.postCarousels.set(c));
+          }
+        }
+      },
+      error: () => {
+        this.carouselPolling$?.unsubscribe();
+        this.carouselPolling$ = undefined;
+      },
+    });
+  }
+
+  toggleCarouselGen() {
+    this.showCarouselGen.update(v => !v);
+    if (!this.showCarouselGen()) this.carouselPrompt = '';
+  }
+
+  toggleCarouselFeedback() {
+    this.showCarouselFeedback.update(v => !v);
+    if (!this.showCarouselFeedback()) this.carouselFeedbackText = '';
+  }
+
+  generateCarousel() {
+    const p = this.post();
+    if (!p) return;
+    this.carouselLoading.set(true);
+    const prompt = this.carouselPrompt.trim() || undefined;
+    this.postService.generateCarousel(this.wsId, p.id, prompt).subscribe({
+      next: carousel => {
+        this.postCarousels.update(existing => [carousel, ...existing]);
+        this.carouselLoading.set(false);
+        this.carouselPrompt = '';
+        this.showCarouselGen.set(false);
+      },
+      error: () => this.carouselLoading.set(false),
+    });
+  }
+
+  regenerateCarousel() {
+    const p = this.post();
+    if (!p) return;
+    this.carouselLoading.set(true);
+    const feedback = this.carouselFeedbackText.trim() || undefined;
+    this.postService.regenerateCarousel(this.wsId, p.id, feedback).subscribe({
+      next: carousel => {
+        this.postCarousels.update(existing => [carousel, ...existing]);
+        this.carouselLoading.set(false);
+        this.carouselFeedbackText = '';
+        this.showCarouselFeedback.set(false);
+      },
+      error: () => this.carouselLoading.set(false),
+    });
+  }
+
+  deleteCarousel(carousel: PostCarousel) {
+    const p = this.post();
+    if (!p) return;
+    this.postService.deleteCarousel(this.wsId, p.id, carousel.id).subscribe({
+      next: () => this.postCarousels.update(c => c.filter(x => x.id !== carousel.id)),
+    });
+  }
+
   ngOnDestroy() {
     this.imagePolling$?.unsubscribe();
+    this.carouselPolling$?.unsubscribe();
   }
 
   toggleShare() {

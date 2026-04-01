@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '../config/supabase.js';
 import { NotFoundError } from '../utils/api-error.js';
-import type { Post, PostStatus, ImageStatus } from '../types/post.types.js';
+import type { Post, PostStatus, ImageStatus, CarouselStatus } from '../types/post.types.js';
 
 export async function findAllByWorkspaceId(
   workspaceId: string,
@@ -79,6 +79,18 @@ export async function updateImageStatus(
   await supabaseAdmin
     .from('mimeo_posts')
     .update({ image_status: imageStatus })
+    .eq('id', id)
+    .eq('user_id', userId);
+}
+
+export async function updateCarouselStatus(
+  id: string,
+  carouselStatus: CarouselStatus | null,
+  userId: string
+): Promise<void> {
+  await supabaseAdmin
+    .from('mimeo_posts')
+    .update({ carousel_status: carouselStatus })
     .eq('id', id)
     .eq('user_id', userId);
 }

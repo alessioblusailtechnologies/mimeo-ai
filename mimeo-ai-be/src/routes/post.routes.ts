@@ -23,5 +23,9 @@ router.get('/:id/images', postController.getImages);
 router.delete('/:id/images/:imgId', postController.deleteImage);
 router.post('/:id/share', postController.enableShare);
 router.delete('/:id/share', postController.disableShare);
+router.get('/:id/carousels', postController.getCarousels);
+router.post('/:id/carousels/generate', postController.generateCarousel);
+router.post('/:id/carousels/regenerate', postController.regenerateCarousel);
+router.delete('/:id/carousels/:carouselId', postController.deleteCarousel);
 
 export default router;

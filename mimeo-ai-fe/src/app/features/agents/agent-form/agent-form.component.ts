@@ -38,7 +38,14 @@ export class AgentFormComponent implements OnInit {
   workspaceName = signal('');
 
   // Form
-  form: CreateAgentDto & { image_generation_enabled?: boolean; image_prompt?: string; image_count?: number; image_reference_url?: string | null } = {
+  form: CreateAgentDto & {
+    image_generation_enabled?: boolean;
+    image_prompt?: string;
+    image_count?: number;
+    image_reference_url?: string | null;
+    carousel_enabled?: boolean;
+    carousel_prompt?: string;
+  } = {
     name: '',
     tone: 'professional',
     ai_provider: 'claude',
@@ -49,6 +56,8 @@ export class AgentFormComponent implements OnInit {
     image_prompt: '',
     image_count: 1,
     image_reference_url: null,
+    carousel_enabled: false,
+    carousel_prompt: '',
   };
 
   // Reference image
@@ -125,6 +134,8 @@ export class AgentFormComponent implements OnInit {
           image_prompt: agent.image_prompt || '',
           image_count: agent.image_count || 1,
           image_reference_url: agent.image_reference_url || null,
+          carousel_enabled: agent.carousel_enabled || false,
+          carousel_prompt: agent.carousel_prompt || '',
         };
         if (agent.image_reference_url) {
           this.referenceImagePreview.set(agent.image_reference_url);
@@ -258,6 +269,8 @@ export class AgentFormComponent implements OnInit {
       sources: currentSources.length > 0 ? currentSources : undefined,
       image_prompt: (this.form.image_prompt as string)?.trim() || undefined,
       image_reference_url: this.form.image_reference_url || null,
+      carousel_enabled: this.form.carousel_enabled || false,
+      carousel_prompt: (this.form.carousel_prompt as string)?.trim() || undefined,
     };
 
     const req = this.isEdit && this.agentId

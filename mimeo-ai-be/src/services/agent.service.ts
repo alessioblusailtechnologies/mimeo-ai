@@ -56,6 +56,8 @@ export async function duplicateAgent(agentId: string, workspaceId: string, userI
     image_prompt: source.image_prompt || undefined,
     image_count: source.image_count,
     image_reference_url: source.image_reference_url,
+    carousel_enabled: source.carousel_enabled,
+    carousel_prompt: source.carousel_prompt || undefined,
   };
   return agentRepo.create(workspaceId, dto, userId);
 }

@@ -34,6 +34,16 @@
         </div>
       </div>
     }
+
+    @if (carousels().length > 0) {
+      <div class="shared-carousels">
+        @for (c of carousels(); track c.id) {
+          <a [href]="c.public_url" target="_blank" class="carousel-download-link">
+            Scarica Carousel PDF ({{ c.slides_count }} slide)
+          </a>
+        }
+      </div>
+    }
   </div>
 
   @if (previewImage(); as preview) {

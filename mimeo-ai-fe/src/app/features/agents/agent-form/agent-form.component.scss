@@ -278,6 +278,22 @@
   margin-bottom: 16px;
 }
 
+.multimedia-section {
+  margin-bottom: 16px;
+}
+
+.multimedia-block {
+  padding: 14px 16px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+
+  &:last-child { margin-bottom: 0; }
+
+  .field:last-child { margin-bottom: 0; }
+}
+
 .toggle-row {
   display: flex;
   align-items: center;

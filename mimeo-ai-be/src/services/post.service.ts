@@ -4,6 +4,7 @@ import * as generationRepo from '../repositories/generation.repository.js';
 import * as tovRepo from '../repositories/tone-of-voice.repository.js';
 import { getAiProvider } from './ai/ai-provider.factory.js';
 import * as postImageService from './post-image.service.js';
+import * as postCarouselService from './post-carousel.service.js';
 import * as linkedInRepo from '../repositories/linkedin.repository.js';
 import { ManualCopyPublisher } from './publishing/manual-copy.publisher.js';
 import { LinkedInPublisher } from './publishing/linkedin.publisher.js';
@@ -152,6 +153,18 @@ export async function generateDraft(
       });
   }
 
+  // Auto-generate carousel if agent has carousel enabled
+  if (agent.carousel_enabled) {
+    await postRepo.updateCarouselStatus(post.id, 'generating', userId);
+    post.carousel_status = 'generating';
+    postCarouselService.generateCarousel(post.id, userId)
+      .then(() => postRepo.updateCarouselStatus(post.id, 'completed', userId))
+      .catch(async (err) => {
+        console.error('Auto carousel generation failed:', err);
+        await postRepo.updateCarouselStatus(post.id, 'failed', userId);
+      });
+  }
+
   return { post, generations };
 }
 
@@ -203,6 +216,17 @@ export async function regenerate(
       .catch(async (err) => {
         console.error('Auto image regeneration failed:', err);
         await postRepo.updateImageStatus(post.id, 'failed', userId);
+      });
+  }
+
+  // Auto-generate carousel if agent has carousel enabled
+  if (agent.carousel_enabled) {
+    await postRepo.updateCarouselStatus(post.id, 'generating', userId);
+    postCarouselService.generateCarousel(post.id, userId)
+      .then(() => postRepo.updateCarouselStatus(post.id, 'completed', userId))
+      .catch(async (err) => {
+        console.error('Auto carousel regeneration failed:', err);
+        await postRepo.updateCarouselStatus(post.id, 'failed', userId);
       });
   }
 
@@ -263,14 +287,18 @@ export async function disableShare(postId: string, userId: string): Promise<Post
   return postRepo.disableShare(postId, userId);
 }
 
-export async function getSharedPost(shareToken: string): Promise<{ post: Post; images: import('../types/post-image.types.js').PostImage[] }> {
+export async function getSharedPost(shareToken: string) {
   const post = await postRepo.findByShareToken(shareToken);
-  const { data: images } = await (await import('../config/supabase.js')).supabaseAdmin
-    .from('mimeo_post_images')
-    .select('*')
-    .eq('post_id', post.id)
-    .order('created_at', { ascending: false });
-  return { post, images: (images || []) as import('../types/post-image.types.js').PostImage[] };
+  const { supabaseAdmin } = await import('../config/supabase.js');
+  const [{ data: images }, { data: carousels }] = await Promise.all([
+    supabaseAdmin.from('mimeo_post_images').select('*').eq('post_id', post.id).order('created_at', { ascending: false }),
+    supabaseAdmin.from('mimeo_post_carousels').select('*').eq('post_id', post.id).order('created_at', { ascending: false }),
+  ]);
+  return {
+    post,
+    images: (images || []) as import('../types/post-image.types.js').PostImage[],
+    carousels: (carousels || []) as import('../types/post-carousel.types.js').PostCarousel[],
+  };
 }
 
 export async function publishPost(postId: string, userId: string): Promise<Post> {

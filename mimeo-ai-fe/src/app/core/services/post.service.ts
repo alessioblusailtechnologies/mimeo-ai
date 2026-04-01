@@ -5,6 +5,7 @@ import { map } from 'rxjs';
 
 export type PostStatus = 'draft' | 'approved' | 'published';
 export type ImageStatus = 'generating' | 'completed' | 'failed';
+export type CarouselStatus = 'generating' | 'completed' | 'failed';
 
 export interface Post {
   id: string;
@@ -16,6 +17,7 @@ export interface Post {
   original_brief: string;
   status: PostStatus;
   image_status: ImageStatus | null;
+  carousel_status: CarouselStatus | null;
   share_token: string | null;
   published_at: string | null;
   created_at: string;
@@ -40,6 +42,17 @@ export interface PostImage {
   post_id: string;
   prompt: string;
   public_url: string;
+  ai_model: string;
+  generation_time_ms: number | null;
+  created_at: string;
+}
+
+export interface PostCarousel {
+  id: string;
+  post_id: string;
+  storage_path: string;
+  public_url: string;
+  slides_count: number;
   ai_model: string;
   generation_time_ms: number | null;
   created_at: string;
@@ -146,8 +159,36 @@ export class PostService {
   }
 
   getShared(shareToken: string) {
-    return this.http.get<ApiResponse<{ post: Post; images: PostImage[] }>>(
+    return this.http.get<ApiResponse<{ post: Post; images: PostImage[]; carousels: PostCarousel[] }>>(
       `${environment.apiUrl}/shared/posts/${shareToken}`
+    ).pipe(map(r => r.data));
+  }
+
+  getCarousels(wsId: string, postId: string) {
+    return this.http.get<ApiResponse<PostCarousel[]>>(
+      `${this.url(wsId)}/${postId}/carousels`
+    ).pipe(map(r => r.data));
+  }
+
+  generateCarousel(wsId: string, postId: string, prompt?: string) {
+    const body: Record<string, unknown> = {};
+    if (prompt) body['prompt'] = prompt;
+    return this.http.post<ApiResponse<PostCarousel>>(
+      `${this.url(wsId)}/${postId}/carousels/generate`, body
+    ).pipe(map(r => r.data));
+  }
+
+  regenerateCarousel(wsId: string, postId: string, feedback?: string) {
+    const body: Record<string, unknown> = {};
+    if (feedback) body['feedback'] = feedback;
+    return this.http.post<ApiResponse<PostCarousel>>(
+      `${this.url(wsId)}/${postId}/carousels/regenerate`, body
+    ).pipe(map(r => r.data));
+  }
+
+  deleteCarousel(wsId: string, postId: string, carouselId: string) {
+    return this.http.delete<ApiResponse<{ deleted: boolean }>>(
+      `${this.url(wsId)}/${postId}/carousels/${carouselId}`
     ).pipe(map(r => r.data));
   }
 }

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as postService from '../services/post.service.js';
 import * as postImageService from '../services/post-image.service.js';
+import * as postCarouselService from '../services/post-carousel.service.js';
 import { sendSuccess, sendCreated } from '../utils/api-response.js';
 import type { PostStatus } from '../types/post.types.js';
 
@@ -117,5 +118,35 @@ export async function getShared(req: Request<{ shareToken: string }>, res: Respo
   try {
     const result = await postService.getSharedPost(req.params.shareToken);
     sendSuccess(res, result);
+  } catch (err) { next(err); }
+}
+
+export async function getCarousels(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const carousels = await postCarouselService.getPostCarousels(req.params.id, req.user!.id);
+    sendSuccess(res, carousels);
+  } catch (err) { next(err); }
+}
+
+export async function generateCarousel(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const prompt = req.body?.prompt as string | undefined;
+    const carousel = await postCarouselService.generateCarousel(req.params.id, req.user!.id, prompt);
+    sendCreated(res, carousel);
+  } catch (err) { next(err); }
+}
+
+export async function regenerateCarousel(req: Request<{ wsId: string; id: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const feedback = req.body?.feedback as string | undefined;
+    const carousel = await postCarouselService.regenerateCarousel(req.params.id, req.user!.id, feedback);
+    sendCreated(res, carousel);
+  } catch (err) { next(err); }
+}
+
+export async function deleteCarousel(req: Request<{ wsId: string; id: string; carouselId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await postCarouselService.deleteCarousel(req.params.carouselId, req.user!.id);
+    sendSuccess(res, { deleted: true });
   } catch (err) { next(err); }
 }

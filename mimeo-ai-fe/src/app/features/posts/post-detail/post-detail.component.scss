@@ -472,6 +472,92 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+// Carousel section
+.carousel-section {
+  margin-bottom: 16px;
+}
+
+.carousel-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.carousel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.carousel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.carousel-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.carousel-link {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-l);
+  text-decoration: none;
+  transition: .15s;
+
+  &:hover { color: var(--text-1); }
+}
+
+.carousel-meta {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.carousel-item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-carousel-download {
+  padding: 4px 10px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: #e0e1dd;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: .15s;
+
+  &:hover { background: var(--accent-l); }
+}
+
+.btn-carousel-delete {
+  padding: 4px 10px;
+  background: rgba(239, 68, 68, .1);
+  border: 1px solid rgba(239, 68, 68, .3);
+  border-radius: var(--radius-sm);
+  color: #f87171;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: .15s;
+
+  &:hover { background: rgba(239, 68, 68, .25); }
+}
+
 // Images section
 .images-section {
   margin-bottom: 16px;

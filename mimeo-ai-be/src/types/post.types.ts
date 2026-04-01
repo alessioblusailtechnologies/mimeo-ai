@@ -1,5 +1,6 @@
 export type PostStatus = 'draft' | 'approved' | 'published';
 export type ImageStatus = 'generating' | 'completed' | 'failed';
+export type CarouselStatus = 'generating' | 'completed' | 'failed';
 
 export interface Post {
   id: string;
@@ -11,6 +12,7 @@ export interface Post {
   original_brief: string;
   status: PostStatus;
   image_status: ImageStatus | null;
+  carousel_status: CarouselStatus | null;
   share_token: string | null;
   published_at: string | null;
   created_at: string;

@@ -180,69 +180,91 @@
       </div>
     </div>
 
-    <!-- Image Generation -->
-    <div class="image-gen-section">
-      <label class="section-label">Generazione Immagini <span class="label-hint">(opzionale)</span></label>
+    <!-- Multimedia Content -->
+    <div class="multimedia-section">
+      <label class="section-label">Contenuti Multimediali <span class="label-hint">(opzionale)</span></label>
 
-      <div class="field">
-        <label class="toggle-row">
-          <input type="checkbox" [(ngModel)]="form.image_generation_enabled" name="image_generation_enabled" />
-          <span>Genera immagini automaticamente con ogni post</span>
-        </label>
-      </div>
-
-      @if (form.image_generation_enabled) {
-        <!-- Reference Image Upload -->
+      <!-- Image Generation -->
+      <div class="multimedia-block">
         <div class="field">
-          <label>Immagine di riferimento stile <span class="label-hint">(opzionale)</span></label>
-          <span class="field-hint" style="margin-bottom: 8px">Carica un'immagine di esempio e l'AI analizzerà lo stile per generare immagini simili.</span>
+          <label class="toggle-row">
+            <input type="checkbox" [(ngModel)]="form.image_generation_enabled" name="image_generation_enabled" />
+            <span>Genera immagini automaticamente con ogni post</span>
+          </label>
+        </div>
 
-          @if (referenceImagePreview()) {
-            <div class="reference-image-preview">
-              <img [src]="referenceImagePreview()" alt="Immagine di riferimento" />
-              @if (referenceImageLoading()) {
-                <div class="reference-overlay">
-                  <span class="ref-spinner"></span>
-                  <span>Analisi stile in corso...</span>
-                </div>
-              }
-              @if (!referenceImageLoading()) {
-                <button type="button" class="btn-remove-ref" (click)="removeReferenceImage()">
-                  <app-icon [icon]="icons.delete" [size]="13" /> Rimuovi
+        @if (form.image_generation_enabled) {
+          <div class="field">
+            <label>Immagine di riferimento stile <span class="label-hint">(opzionale)</span></label>
+            <span class="field-hint" style="margin-bottom: 8px">Carica un'immagine di esempio e l'AI analizzerà lo stile per generare immagini simili.</span>
+
+            @if (referenceImagePreview()) {
+              <div class="reference-image-preview">
+                <img [src]="referenceImagePreview()" alt="Immagine di riferimento" />
+                @if (referenceImageLoading()) {
+                  <div class="reference-overlay">
+                    <span class="ref-spinner"></span>
+                    <span>Analisi stile in corso...</span>
+                  </div>
+                }
+                @if (!referenceImageLoading()) {
+                  <button type="button" class="btn-remove-ref" (click)="removeReferenceImage()">
+                    <app-icon [icon]="icons.delete" [size]="13" /> Rimuovi
+                  </button>
+                }
+              </div>
+            } @else {
+              <label class="reference-upload-area">
+                <app-icon [icon]="icons.plus" [size]="18" />
+                <span>Carica immagine di riferimento</span>
+                <span class="file-hint">PNG, JPG, WEBP</span>
+                <input type="file" (change)="onReferenceImageSelected($event)"
+                       accept="image/png,image/jpeg,image/webp" hidden />
+              </label>
+            }
+          </div>
+
+          <div class="field">
+            <label for="image_prompt">Prompt immagine</label>
+            <textarea id="image_prompt" [(ngModel)]="form.image_prompt" name="image_prompt"
+                      rows="3"
+                      placeholder="Es: Crea un'immagine professionale e moderna che rappresenti il concetto del post..."></textarea>
+            <span class="field-hint">Questo prompt viene combinato con il contenuto del post generato per creare immagini contestuali.</span>
+          </div>
+
+          <div class="field">
+            <label>Numero di immagini per post</label>
+            <div class="versions-select">
+              @for (n of imageCountOptions; track n) {
+                <button type="button" class="version-opt" [class.active]="form.image_count === n"
+                        (click)="form.image_count = n">
+                  {{ n }}
                 </button>
               }
             </div>
-          } @else {
-            <label class="reference-upload-area">
-              <app-icon [icon]="icons.plus" [size]="18" />
-              <span>Carica immagine di riferimento</span>
-              <span class="file-hint">PNG, JPG, WEBP</span>
-              <input type="file" (change)="onReferenceImageSelected($event)"
-                     accept="image/png,image/jpeg,image/webp" hidden />
-            </label>
-          }
-        </div>
-
-        <div class="field">
-          <label for="image_prompt">Prompt immagine</label>
-          <textarea id="image_prompt" [(ngModel)]="form.image_prompt" name="image_prompt"
-                    rows="3"
-                    placeholder="Es: Crea un'immagine professionale e moderna che rappresenti il concetto del post..."></textarea>
-          <span class="field-hint">Questo prompt viene combinato con il contenuto del post generato per creare immagini contestuali.</span>
-        </div>
-
-        <div class="field">
-          <label>Numero di immagini per post</label>
-          <div class="versions-select">
-            @for (n of imageCountOptions; track n) {
-              <button type="button" class="version-opt" [class.active]="form.image_count === n"
-                      (click)="form.image_count = n">
-                {{ n }}
-              </button>
-            }
           </div>
+        }
+      </div>
+
+      <!-- Carousel / PDF Slides -->
+      <div class="multimedia-block">
+        <div class="field">
+          <label class="toggle-row">
+            <input type="checkbox" [(ngModel)]="form.carousel_enabled" name="carousel_enabled" />
+            <span>Genera carousel PDF slide con ogni post</span>
+          </label>
         </div>
-      }
+
+        @if (form.carousel_enabled) {
+          <div class="field">
+            <label for="carousel_prompt">Prompt carousel <span class="label-hint">(opzionale)</span></label>
+            <textarea id="carousel_prompt" [(ngModel)]="form.carousel_prompt" name="carousel_prompt"
+                      rows="3"
+                      placeholder="Es: Usa colori blu scuro e bianco, stile minimalista, testo grande e impattante..."></textarea>
+            <span class="field-hint">Istruzioni aggiuntive per lo stile e il design delle slide del carousel. Il contenuto del post viene incluso automaticamente.</span>
+          </div>
+        }
+      </div>
     </div>
 
     <div class="field">

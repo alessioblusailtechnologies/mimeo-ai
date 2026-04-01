@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { PostService, Post, PostImage } from '../../../core/services/post.service';
+import { PostService, Post, PostImage, PostCarousel } from '../../../core/services/post.service';
 import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
@@ -13,6 +13,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 export class SharedPostComponent implements OnInit {
   post = signal<Post | null>(null);
   images = signal<PostImage[]>([]);
+  carousels = signal<PostCarousel[]>([]);
   error = signal(false);
   previewImage = signal<PostImage | null>(null);
 
@@ -27,6 +28,7 @@ export class SharedPostComponent implements OnInit {
       next: result => {
         this.post.set(result.post);
         this.images.set(result.images);
+        this.carousels.set(result.carousels);
       },
       error: () => this.error.set(true),
     });

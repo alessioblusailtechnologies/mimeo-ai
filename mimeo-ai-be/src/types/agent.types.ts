@@ -33,6 +33,8 @@ export interface Agent {
   image_prompt: string | null;
   image_count: number;
   image_reference_url: string | null;
+  carousel_enabled: boolean;
+  carousel_prompt: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,6 +58,8 @@ export interface CreateAgentDto {
   image_prompt?: string;
   image_count?: number;
   image_reference_url?: string | null;
+  carousel_enabled?: boolean;
+  carousel_prompt?: string;
 }
 
 export interface UpdateAgentDto {
@@ -78,4 +82,6 @@ export interface UpdateAgentDto {
   image_prompt?: string;
   image_count?: number;
   image_reference_url?: string | null;
+  carousel_enabled?: boolean;
+  carousel_prompt?: string;
 }

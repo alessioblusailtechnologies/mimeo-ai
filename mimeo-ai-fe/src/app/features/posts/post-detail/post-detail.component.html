@@ -241,6 +241,80 @@
       </div>
     </div>
 
+    <!-- Carousel / PDF Slides Section -->
+    <div class="carousel-section">
+      <span class="section-label">Carousel PDF Slide</span>
+      <div class="carousel-card">
+        @if (postCarousels().length > 0) {
+          <div class="carousel-list">
+            @for (c of postCarousels(); track c.id) {
+              <div class="carousel-item">
+                <div class="carousel-item-info">
+                  <a [href]="c.public_url" target="_blank" class="carousel-link">
+                    PDF Carousel ({{ c.slides_count }} slide)
+                  </a>
+                  <span class="carousel-meta">{{ c.ai_model }} &middot; {{ c.created_at | date:'short' }}</span>
+                </div>
+                <div class="carousel-item-actions">
+                  <a [href]="c.public_url" target="_blank" class="btn-carousel-download">Scarica</a>
+                  <button class="btn-carousel-delete" (click)="deleteCarousel(c)">Elimina</button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (post.carousel_status === 'generating') {
+          <div class="image-generating-bar">
+            <span class="image-spinner"></span>
+            <span>Generazione carousel in corso...</span>
+          </div>
+        } @else if (post.carousel_status === 'failed') {
+          <div class="images-empty-state">
+            <span class="empty-icon">!</span>
+            <span>Generazione carousel fallita</span>
+          </div>
+        } @else if (!showCarouselGen() && !showCarouselFeedback()) {
+          <div class="images-empty-state">
+            <span>Nessun carousel generato</span>
+          </div>
+        }
+
+        @if (showCarouselFeedback()) {
+          <div class="image-input-bar">
+            <input type="text" class="feedback-input"
+                   [(ngModel)]="carouselFeedbackText"
+                   placeholder="Es: usa colori più vivaci, aggiungi una slide di introduzione..."
+                   (keydown.enter)="regenerateCarousel()" />
+            <button class="btn-action-go" (click)="regenerateCarousel()" [disabled]="carouselLoading()">
+              {{ carouselLoading() ? 'Generando...' : 'Rigenera' }}
+            </button>
+          </div>
+        }
+
+        @if (showCarouselGen()) {
+          <div class="image-input-bar">
+            <input type="text" class="feedback-input"
+                   [(ngModel)]="carouselPrompt"
+                   placeholder="Descrivi lo stile del carousel (opzionale)..."
+                   (keydown.enter)="generateCarousel()" />
+            <button class="btn-action-go" (click)="generateCarousel()" [disabled]="carouselLoading()">
+              {{ carouselLoading() ? 'Generando...' : 'Genera' }}
+            </button>
+          </div>
+        }
+
+        <div class="images-actions">
+          @if (agentHasCarousel() && post.status === 'draft') {
+            <button class="btn-img-action" [class.active]="showCarouselFeedback()" (click)="toggleCarouselFeedback()">
+              {{ showCarouselFeedback() ? 'Annulla' : 'Rigenera carousel' }}
+            </button>
+          }
+          <button class="btn-img-action" [class.active]="showCarouselGen()" (click)="toggleCarouselGen()">
+            {{ showCarouselGen() ? 'Annulla' : 'Genera manualmente' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Generation History (regenerations only, after initial batch) -->
     @if (historyGenerations().length > 0) {
       <div class="generations-section">

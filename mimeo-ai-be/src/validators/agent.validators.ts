@@ -28,6 +28,7 @@ export const createAgentSchema = z.object({
   image_reference_url: z.string().url().max(2000).nullable().optional(),
   carousel_enabled: z.boolean().optional().default(false),
   carousel_prompt: z.string().max(2000).optional(),
+  carousel_reference_images: z.array(z.string().url().max(2000)).max(3).optional(),
 });
 
 export const updateAgentSchema = createAgentSchema.partial();

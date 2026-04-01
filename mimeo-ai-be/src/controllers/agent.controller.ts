@@ -69,3 +69,14 @@ export async function uploadReferenceImage(req: Request<{ wsId: string }>, res: 
     sendSuccess(res, result);
   } catch (err) { next(err); }
 }
+
+export async function uploadCarouselReferenceImage(req: Request<{ wsId: string }>, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string') {
+      throw new BadRequestError('image (base64) is required');
+    }
+    const result = await agentService.uploadCarouselReferenceImage(image, req.user!.id);
+    sendSuccess(res, result);
+  } catch (err) { next(err); }
+}

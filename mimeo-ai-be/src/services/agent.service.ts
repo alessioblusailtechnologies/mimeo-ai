@@ -58,6 +58,7 @@ export async function duplicateAgent(agentId: string, workspaceId: string, userI
     image_reference_url: source.image_reference_url,
     carousel_enabled: source.carousel_enabled,
     carousel_prompt: source.carousel_prompt || undefined,
+    carousel_reference_images: source.carousel_reference_images?.length ? source.carousel_reference_images : undefined,
   };
   return agentRepo.create(workspaceId, dto, userId);
 }
@@ -163,4 +164,25 @@ export async function uploadAndAnalyzeReferenceImage(
   const styleDescription = analysis.choices[0]?.message?.content || '';
 
   return { url: urlData.publicUrl, style_description: styleDescription };
+}
+
+export async function uploadCarouselReferenceImage(
+  base64Image: string,
+  userId: string
+): Promise<{ url: string }> {
+  const raw = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(raw, 'base64');
+
+  const fileName = `${userId}/carousel-ref/${randomUUID()}.png`;
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('agent-references')
+    .upload(fileName, buffer, { contentType: 'image/png', upsert: false });
+
+  if (uploadError) throw uploadError;
+
+  const { data: urlData } = supabaseAdmin.storage
+    .from('agent-references')
+    .getPublicUrl(fileName);
+
+  return { url: urlData.publicUrl };
 }

@@ -4,6 +4,7 @@ export interface AiGenerationRequest {
   model: string;
   maxTokens?: number;
   temperature?: number;
+  imageUrls?: string[];
 }
 
 export interface AiGenerationResponse {

@@ -11,13 +11,24 @@ export class OpenAIProvider implements AiProvider, AiImageProvider {
   async generate(request: AiGenerationRequest): Promise<AiGenerationResponse> {
     const start = Date.now();
 
+    const userContent: OpenAI.ChatCompletionContentPart[] | string =
+      request.imageUrls?.length
+        ? [
+            ...request.imageUrls.map((url) => ({
+              type: 'image_url' as const,
+              image_url: { url },
+            })),
+            { type: 'text' as const, text: request.userPrompt },
+          ]
+        : request.userPrompt;
+
     const response = await this.client.chat.completions.create({
       model: request.model,
       max_tokens: request.maxTokens || 1024,
       temperature: request.temperature ?? 0.7,
       messages: [
         { role: 'system', content: request.systemPrompt },
-        { role: 'user', content: request.userPrompt },
+        { role: 'user', content: userContent },
       ],
     });
 

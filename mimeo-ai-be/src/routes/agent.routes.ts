@@ -16,5 +16,6 @@ router.post('/:id/duplicate', agentController.duplicate);
 router.delete('/:id', agentController.remove);
 router.post('/upload-source-file', agentController.uploadSourceFile);
 router.post('/upload-reference-image', agentController.uploadReferenceImage);
+router.post('/upload-carousel-reference', agentController.uploadCarouselReferenceImage);
 
 export default router;

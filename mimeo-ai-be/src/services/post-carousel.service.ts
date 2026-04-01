@@ -126,10 +126,19 @@ export async function generateCarousel(
 
   const aiProvider = getAiProvider(agent.ai_provider);
 
+  const referenceImages = agent.carousel_reference_images ?? [];
+
   const userPromptParts = [
     `Create carousel slides that present the following content in a visually stunning way.\n\nPost content:\n${post.content.slice(0, 4000)}`,
   ];
 
+  if (referenceImages.length > 0) {
+    userPromptParts.push(
+      `\nIMPORTANT: I have attached ${referenceImages.length} reference image(s) showing the visual style I want. ` +
+      `Closely match the layout, color palette, typography style, and decorative elements from these examples. ` +
+      `Replicate the overall look and feel as faithfully as possible in your HTML/CSS output.`
+    );
+  }
   if (agent.carousel_prompt) {
     userPromptParts.push(`\nAdditional style/design instructions:\n${agent.carousel_prompt}`);
   }
@@ -147,6 +156,7 @@ export async function generateCarousel(
     model: agent.ai_model,
     maxTokens: 8192,
     temperature: 0.7,
+    imageUrls: referenceImages.length > 0 ? referenceImages : undefined,
   });
 
   const html = extractHtml(aiResponse.content);

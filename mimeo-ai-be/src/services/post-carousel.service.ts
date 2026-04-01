@@ -1,5 +1,4 @@
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer';
 import { randomUUID } from 'crypto';
 import { supabaseAdmin } from '../config/supabase.js';
 import * as postRepo from '../repositories/post.repository.js';
@@ -9,41 +8,113 @@ import { getAiProvider } from './ai/ai-provider.factory.js';
 import { BadRequestError } from '../utils/api-error.js';
 import type { PostCarousel } from '../types/post-carousel.types.js';
 
-const CAROUSEL_SYSTEM_PROMPT = `You are a carousel slide designer for social media. You generate self-contained HTML documents that represent carousel slides.
+const SLIDE_SIZE = 1080;
 
-RULES:
-- Generate a single HTML document with multiple slides.
-- Each slide is a <div class="slide"> exactly 1080x1080 pixels.
-- Use ONLY inline CSS within a <style> tag in the <head>. No external resources.
-- Use clean, modern design: bold headings, concise text, good whitespace.
-- Use a cohesive color scheme across all slides.
-- The first slide should be a title/hook slide that grabs attention.
-- The last slide should be a call-to-action or summary slide.
-- Middle slides break down the key points of the content.
-- Keep text per slide minimal (max 40-50 words per slide). Use large fonts.
-- Use CSS page-break-after: always between slides for PDF pagination.
-- Do NOT use images, SVGs, or external fonts. Use system fonts only.
-- Use CSS shapes, gradients, borders, and background colors for visual interest.
-- Output ONLY the HTML document, nothing else. No explanation, no markdown fences.
+const CAROUSEL_SYSTEM_PROMPT = `You are an expert carousel designer for LinkedIn and social media.
 
-HTML STRUCTURE:
+Your task is to generate a COMPLETE, self-contained HTML document that renders a series of carousel slides.
+
+OUTPUT: You MUST output ONLY valid HTML. No markdown, no explanation, no code fences.
+
+TECHNICAL REQUIREMENTS:
+- Each slide is a <section class="slide"> element, exactly ${SLIDE_SIZE}px × ${SLIDE_SIZE}px.
+- All CSS must be in a <style> tag inside <head>. No external stylesheets or scripts.
+- You may use Google Fonts via @import in the <style> tag.
+- The body must have margin: 0 and display slides vertically one after another.
+- Add this print CSS for PDF pagination:
+  @media print {
+    .slide { page-break-after: always; }
+    .slide:last-child { page-break-after: auto; }
+  }
+
+DESIGN RULES:
+- Generate 5-8 slides depending on content depth.
+- First slide: eye-catching title/hook that grabs attention. Use the post title if provided.
+- Last slide: strong call-to-action or key takeaway summary.
+- Middle slides: one key point per slide. Keep text concise and impactful.
+- Use a cohesive, modern color scheme. Dark backgrounds with light text work best for LinkedIn.
+- Use accent colors for titles, decorative elements, and highlights.
+- Add decorative elements: geometric shapes, accent bars/lines, subtle gradients.
+- Include slide numbers at the bottom (e.g. "3/7").
+- Use proper visual hierarchy: large bold titles, medium body text, small footnotes.
+- Ensure text is readable and well-spaced. Don't overcrowd slides.
+
+HTML TEMPLATE TO FOLLOW:
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  .slide { width: 1080px; height: 1080px; padding: 80px; display: flex; flex-direction: column; justify-content: center; page-break-after: always; overflow: hidden; }
-  .slide:last-child { page-break-after: auto; }
-  /* ... your styles ... */
-</style>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { margin: 0; }
+    .slide {
+      width: ${SLIDE_SIZE}px;
+      height: ${SLIDE_SIZE}px;
+      padding: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    @media print {
+      .slide { page-break-after: always; }
+      .slide:last-child { page-break-after: auto; }
+    }
+    /* Your custom styles here */
+  </style>
 </head>
 <body>
-  <div class="slide">...</div>
-  <div class="slide">...</div>
-  ...
+  <section class="slide"><!-- slide content --></section>
+  <!-- more slides -->
 </body>
 </html>`;
+
+async function htmlToPdf(html: string): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--font-render-hinting=none',
+    ],
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: SLIDE_SIZE, height: SLIDE_SIZE });
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15_000 });
+
+    const pdf = await page.pdf({
+      width: `${SLIDE_SIZE}px`,
+      height: `${SLIDE_SIZE}px`,
+      printBackground: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    });
+
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
+}
+
+function countSlides(html: string): number {
+  const matches = html.match(/<section[^>]*class\s*=\s*["'][^"']*slide[^"']*["']/g);
+  return matches ? matches.length : 0;
+}
+
+function extractHtml(raw: string): string {
+  let html = raw.trim();
+  // Strip code fences if the LLM wrapped the output
+  if (html.startsWith('```')) {
+    html = html.replace(/^```(?:html)?\n?/, '').replace(/\n?```$/, '');
+  }
+  return html;
+}
 
 export async function generateCarousel(
   postId: string,
@@ -56,17 +127,17 @@ export async function generateCarousel(
   const aiProvider = getAiProvider(agent.ai_provider);
 
   const userPromptParts = [
-    `Create a carousel of slides that summarizes and presents the following content in a visually engaging way.\n\nPost content:\n${post.content.slice(0, 4000)}`,
+    `Create carousel slides that present the following content in a visually stunning way.\n\nPost content:\n${post.content.slice(0, 4000)}`,
   ];
 
   if (agent.carousel_prompt) {
     userPromptParts.push(`\nAdditional style/design instructions:\n${agent.carousel_prompt}`);
   }
   if (customPrompt) {
-    userPromptParts.push(`\nUser instructions for this generation:\n${customPrompt}`);
+    userPromptParts.push(`\nUser instructions:\n${customPrompt}`);
   }
   if (post.title) {
-    userPromptParts.push(`\nPost title (use it for the first slide): ${post.title}`);
+    userPromptParts.push(`\nPost title (use for the first slide): ${post.title}`);
   }
 
   const start = Date.now();
@@ -78,62 +149,49 @@ export async function generateCarousel(
     temperature: 0.7,
   });
 
-  // Extract HTML from response (strip markdown fences if present)
-  let html = aiResponse.content.trim();
-  if (html.startsWith('```')) {
-    html = html.replace(/^```(?:html)?\n?/, '').replace(/\n?```$/, '');
+  const html = extractHtml(aiResponse.content);
+
+  const slidesCount = countSlides(html);
+  if (slidesCount === 0) {
+    throw new BadRequestError('AI did not return valid carousel HTML with slides');
   }
 
-  // Count slides
-  const slidesCount = (html.match(/<div\s+class=["']slide["']/g) || []).length;
+  // Convert HTML → PDF
+  const pdfBytes = await htmlToPdf(html);
+  const generationTimeMs = Date.now() - start;
 
-  // Convert HTML to PDF using Puppeteer + @sparticuz/chromium
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: true,
+  // Upload HTML and PDF to Supabase Storage in parallel
+  const fileId = randomUUID();
+  const htmlPath = `${userId}/${postId}/${fileId}.html`;
+  const pdfPath = `${userId}/${postId}/${fileId}.pdf`;
+
+  const [htmlUpload, pdfUpload] = await Promise.all([
+    supabaseAdmin.storage.from('post-carousels').upload(htmlPath, html, {
+      contentType: 'text/html',
+      upsert: false,
+    }),
+    supabaseAdmin.storage.from('post-carousels').upload(pdfPath, pdfBytes, {
+      contentType: 'application/pdf',
+      upsert: false,
+    }),
+  ]);
+
+  if (htmlUpload.error) throw htmlUpload.error;
+  if (pdfUpload.error) throw pdfUpload.error;
+
+  const { data: urlData } = supabaseAdmin.storage
+    .from('post-carousels')
+    .getPublicUrl(pdfPath);
+
+  return carouselRepo.create({
+    post_id: postId,
+    user_id: userId,
+    storage_path: pdfPath,
+    public_url: urlData.publicUrl,
+    slides_count: slidesCount,
+    ai_model: aiResponse.model,
+    generation_time_ms: generationTimeMs,
   });
-
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const pdfBuffer = await page.pdf({
-      width: '1080px',
-      height: '1080px',
-      printBackground: true,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    });
-
-    const generationTimeMs = Date.now() - start;
-
-    // Upload PDF to Supabase Storage
-    const fileName = `${userId}/${postId}/${randomUUID()}.pdf`;
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('post-carousels')
-      .upload(fileName, pdfBuffer, {
-        contentType: 'application/pdf',
-        upsert: false,
-      });
-
-    if (uploadError) throw uploadError;
-
-    const { data: urlData } = supabaseAdmin.storage
-      .from('post-carousels')
-      .getPublicUrl(fileName);
-
-    return carouselRepo.create({
-      post_id: postId,
-      user_id: userId,
-      storage_path: fileName,
-      public_url: urlData.publicUrl,
-      slides_count: slidesCount || 1,
-      ai_model: aiResponse.model,
-      generation_time_ms: generationTimeMs,
-    });
-  } finally {
-    await browser.close();
-  }
 }
 
 export async function getPostCarousels(postId: string, userId: string): Promise<PostCarousel[]> {
@@ -165,9 +223,11 @@ export async function deleteCarousel(carouselId: string, userId: string): Promis
     .single();
 
   if (carousels.data) {
+    const pdfPath = carousels.data.storage_path;
+    const htmlPath = pdfPath.replace(/\.pdf$/, '.html');
     await supabaseAdmin.storage
       .from('post-carousels')
-      .remove([carousels.data.storage_path]);
+      .remove([pdfPath, htmlPath]);
   }
 
   await carouselRepo.remove(carouselId, userId);

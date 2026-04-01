@@ -38,6 +38,7 @@ export interface Agent {
   image_reference_url: string | null;
   carousel_enabled: boolean;
   carousel_prompt: string | null;
+  carousel_reference_images: string[];
   created_at: string;
   updated_at: string;
 }
@@ -63,6 +64,7 @@ export interface CreateAgentDto {
   image_reference_url?: string | null;
   carousel_enabled?: boolean;
   carousel_prompt?: string;
+  carousel_reference_images?: string[];
 }
 
 interface ApiResponse<T> {
@@ -112,6 +114,13 @@ export class AgentService {
   uploadReferenceImage(wsId: string, imageBase64: string) {
     return this.http.post<ApiResponse<{ url: string; style_description: string }>>(
       `${this.url(wsId)}/upload-reference-image`,
+      { image: imageBase64 }
+    ).pipe(map(r => r.data));
+  }
+
+  uploadCarouselReferenceImage(wsId: string, imageBase64: string) {
+    return this.http.post<ApiResponse<{ url: string }>>(
+      `${this.url(wsId)}/upload-carousel-reference`,
       { image: imageBase64 }
     ).pipe(map(r => r.data));
   }

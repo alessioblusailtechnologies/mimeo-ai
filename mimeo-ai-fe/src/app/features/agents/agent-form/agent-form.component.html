@@ -256,6 +256,35 @@
         </div>
 
         @if (form.carousel_enabled) {
+          <!-- Carousel Reference Images -->
+          <div class="field">
+            <label>Immagini di riferimento <span class="label-hint">(max 3)</span></label>
+            <span class="field-hint" style="margin-bottom: 8px">Carica screenshot di carousel che ti piacciono. L'AI replicherà lo stile visivo (layout, colori, tipografia).</span>
+
+            @if (carouselRefImages().length > 0) {
+              <div class="carousel-ref-grid">
+                @for (img of carouselRefImages(); track $index) {
+                  <div class="carousel-ref-item">
+                    <img [src]="img" alt="Riferimento carousel {{ $index + 1 }}" />
+                    <button type="button" class="btn-remove-ref" (click)="removeCarouselRefImage($index)">
+                      <app-icon [icon]="icons.delete" [size]="13" /> Rimuovi
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (carouselRefImages().length < 3) {
+              <label class="reference-upload-area" [class.disabled]="carouselRefUploading()">
+                <app-icon [icon]="icons.plus" [size]="18" />
+                <span>{{ carouselRefUploading() ? 'Caricamento...' : 'Carica immagine di esempio' }}</span>
+                <span class="file-hint">PNG, JPG, WEBP</span>
+                <input type="file" (change)="onCarouselRefImageSelected($event)"
+                       accept="image/png,image/jpeg,image/webp" hidden [disabled]="carouselRefUploading()" />
+              </label>
+            }
+          </div>
+
           <div class="field">
             <label for="carousel_prompt">Prompt carousel <span class="label-hint">(opzionale)</span></label>
             <textarea id="carousel_prompt" [(ngModel)]="form.carousel_prompt" name="carousel_prompt"

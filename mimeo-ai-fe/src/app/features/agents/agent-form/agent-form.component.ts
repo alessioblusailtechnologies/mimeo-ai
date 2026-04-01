@@ -45,6 +45,7 @@ export class AgentFormComponent implements OnInit {
     image_reference_url?: string | null;
     carousel_enabled?: boolean;
     carousel_prompt?: string;
+    carousel_reference_images?: string[];
   } = {
     name: '',
     tone: 'professional',
@@ -58,11 +59,16 @@ export class AgentFormComponent implements OnInit {
     image_reference_url: null,
     carousel_enabled: false,
     carousel_prompt: '',
+    carousel_reference_images: [],
   };
 
   // Reference image
   referenceImagePreview = signal<string | null>(null);
   referenceImageLoading = signal(false);
+
+  // Carousel reference images
+  carouselRefImages = signal<string[]>([]);
+  carouselRefUploading = signal(false);
 
   readonly versionOptions = [1, 2, 3];
   readonly imageCountOptions = [1, 2, 3, 4];
@@ -136,9 +142,13 @@ export class AgentFormComponent implements OnInit {
           image_reference_url: agent.image_reference_url || null,
           carousel_enabled: agent.carousel_enabled || false,
           carousel_prompt: agent.carousel_prompt || '',
+          carousel_reference_images: agent.carousel_reference_images || [],
         };
         if (agent.image_reference_url) {
           this.referenceImagePreview.set(agent.image_reference_url);
+        }
+        if (agent.carousel_reference_images?.length) {
+          this.carouselRefImages.set(agent.carousel_reference_images);
         }
         this.selectedTovId = agent.tone_of_voice_id || '';
         this.scheduleBrief = agent.schedule_brief || '';
@@ -257,6 +267,40 @@ export class AgentFormComponent implements OnInit {
     this.form.image_reference_url = null;
   }
 
+  onCarouselRefImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    input.value = '';
+
+    if (this.carouselRefImages().length >= 3) {
+      this.error.set('Puoi caricare al massimo 3 immagini di riferimento');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      this.carouselRefUploading.set(true);
+
+      this.agentService.uploadCarouselReferenceImage(this.wsId, base64).subscribe({
+        next: result => {
+          this.carouselRefImages.update(imgs => [...imgs, result.url]);
+          this.carouselRefUploading.set(false);
+        },
+        error: () => {
+          this.error.set('Errore nel caricamento dell\'immagine di riferimento carousel');
+          this.carouselRefUploading.set(false);
+        },
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeCarouselRefImage(index: number) {
+    this.carouselRefImages.update(imgs => imgs.filter((_, i) => i !== index));
+  }
+
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
@@ -271,6 +315,7 @@ export class AgentFormComponent implements OnInit {
       image_reference_url: this.form.image_reference_url || null,
       carousel_enabled: this.form.carousel_enabled || false,
       carousel_prompt: (this.form.carousel_prompt as string)?.trim() || undefined,
+      carousel_reference_images: this.carouselRefImages().length > 0 ? this.carouselRefImages() : undefined,
     };
 
     const req = this.isEdit && this.agentId
